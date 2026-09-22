@@ -68,8 +68,6 @@ Version 1.0 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+
 
 ## Introduction
 
-This design system documents the visual language used across Chemical Krypton — the payments, disbursement, and administrative modules — and applies to every application in the suite. It exists so that any developer touching a Razor view produces something that looks like it belongs to the same application.
-
 The system is built entirely on **Bootstrap 5.3** with **no custom CSS framework, no build step, and no Sass compilation**. Everything is either a Bootstrap utility class or an inline `style` attribute using hex values documented here. This is a deliberate constraint: the application runs on ASP.NET MVC with Razor views served by IIS, and adding a preprocessor to that pipeline is not worth the cost.
 
 ### What this replaces
