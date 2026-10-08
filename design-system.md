@@ -36,6 +36,7 @@ Version 1.0 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+
 - [Breadcrumb](#breadcrumb)
 - [Page header](#page-header)
 - [Stat cards](#stat-cards)
+- [Stock tiles](#stock-tiles)
 - [Buttons](#buttons)
 - [Badges and pills](#badges-and-pills)
 - [Avatars and photos](#avatars-and-photos)
@@ -56,6 +57,7 @@ Version 1.0 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+
 
 **Patterns**
 - [Confirmation flow](#confirmation-flow)
+  - [Active confirmation](#active-confirmation)
 - [Selection lists](#selection-lists)
 - [Figure grids](#figure-grids)
 - [Grouped tables](#grouped-tables)
@@ -483,6 +485,32 @@ All three properties, not just `width`: on a table `width` alone is a suggestion
 ### Currency
 
 Amounts are always right-aligned, bold, and semantic-colored. The peso sign is separated by a single space: `₱ 1,200.00`.
+
+### Expandable row detail
+
+When a cell stands for a short list — every time a voucher was printed, every payment against an invoice — the cell shows the count and opens the list underneath the row, rather than sending the reader to another page or crowding the column.
+
+```html
+<td>
+    <a href="#" class="cc-prints text-decoration-none" data-id="42" style="font-size: 0.78rem; color: #9333ea;">
+        2 prints <i class="bi bi-chevron-down" style="font-size: 0.65rem;"></i>
+    </a>
+</td>
+<!-- immediately after that row -->
+<tr class="cc-prints-row" data-id="42" hidden>
+    <td colspan="8" style="background-color: #f8fafc;">
+        <div class="px-2 py-1">
+            <div style="font-size: 0.78rem; color: #475569;">
+                <i class="bi bi-printer me-1" style="color: #9333ea;"></i>2026-09-23 10:42 &middot; NICANOR NUÑEZ
+            </div>
+        </div>
+    </td>
+</tr>
+```
+
+- **The detail row is a sibling, not a nested table**, and its `colspan` covers every column — a short row breaks the column rules the header set.
+- **The chevron turns** (`bi-chevron-down` to `bi-chevron-up`) so the control says which way it will move.
+- **Nothing to show is a phrase, not an empty link:** `<span style="color:#94a3b8;">Not printed</span>`. A control that opens nothing is worse than a sentence.
 
 ---
 
@@ -1013,6 +1041,94 @@ When the count has a page behind it — the records it counts, or the list it is
 - **`bi-box-arrow-up-right`, slate, `0.80rem`.** It is a way in, not a call to action, so it takes no colour.
 - **The `title` names where it goes** — "Open pending validations", not "More".
 - **Only when the reader may open the page.** Render it `hidden` and reveal it once their permission is known; an arrow to a page that refuses them advertises a door that will not open. The page itself still enforces the permission.
+
+---
+
+## Stock tiles
+
+A grid of things that can be handed out, each showing what is left of it. A tile is one press = one item sold, so it is a **create** action: pale green surface, `1.5px #86efac` border, `#16a34a` figures, deepening to `#dcfce7` on hover. The name and price sit left, the count left in stock sits right.
+
+```html
+<div class="col-12 col-sm-6">
+    <button type="button" class="wifi-plan d-flex align-items-center justify-content-between px-3 py-2 rounded w-100 text-start"
+            data-minutes="60"
+            style="background-color: #f0fdf4; border: 1.5px solid #86efac; cursor: pointer; min-height: 58px;"
+            onmouseover="this.style.backgroundColor='#dcfce7'" onmouseout="this.style.backgroundColor='#f0fdf4'">
+        <div>
+            <p class="fw-bold mb-0" style="font-size: 0.85rem; color: #16a34a;">1 Hour</p>
+            <p class="mb-0" style="font-size: 0.72rem; color: #64748b;">₱ 5.00</p>
+        </div>
+        <div class="text-end">
+            <p class="fw-bold mb-0" style="font-size: 0.92rem; color: #16a34a;">125</p>
+            <p class="mb-0" style="font-size: 0.68rem; color: #94a3b8;">Vouchers left</p>
+        </div>
+    </button>
+</div>
+```
+
+**Rules**
+
+- **The count is the point.** It is the tile's only figure in the semantic colour; the price stays slate, because the price is a label and the count is a state.
+- **`col-12 col-sm-6`,** so four tiles are 2×2 on a card and one column on a phone. Fix `min-height` on every tile: a tile that runs out must not change the grid's height.
+- **Nothing left is not a disabled button** — it is the dashed [unavailable state](#unavailable-state), in the same footprint, saying what has happened rather than offering a press that will fail. The API still refuses the sale; the tile only keeps the card honest.
+
+```html
+<div class="col-12 col-sm-6">
+    <div class="d-flex align-items-center justify-content-between px-3 py-2 rounded w-100"
+         style="background-color: #f1f5f9; border: 1.5px dashed #cbd5e1; min-height: 58px;">
+        <div>
+            <p class="fw-semibold mb-0" style="font-size: 0.85rem; color: #94a3b8;">1 Hour</p>
+            <p class="mb-0" style="font-size: 0.72rem; color: #94a3b8;">₱ 5.00</p>
+        </div>
+        <div class="text-end">
+            <p class="fw-semibold mb-0" style="font-size: 0.72rem; color: #94a3b8;">
+                <i class="bi bi-x-circle-fill me-1"></i>Sold out
+            </p>
+        </div>
+    </div>
+</div>
+```
+
+### A balance and the action that empties it
+
+Money held until somebody takes it out reads as a hero figure with its action beside it, and the history of both behind arrows. The figure carries the colour of what it is (green: money taken in); the action that moves it out is **pending orange** (`#fff7ed` / `#fed7aa` / `#c2410c`) — it is neither a create nor a destruction, and it wants a confirmation.
+
+```html
+<div class="d-flex flex-wrap align-items-end justify-content-between gap-3">
+    <div>
+        <p class="text-uppercase fw-semibold mb-1" style="font-size: 0.70rem; letter-spacing: 0.08em; color: #94a3b8;">
+            <i class="bi bi-graph-up-arrow me-1"></i> Total Sales
+            <a href="/gsc-cebu/payments/wifi/purchases" class="text-decoration-none ms-1"
+               title="Open WiFi purchase history" style="color: #94a3b8; font-size: 0.80rem;"><i class="bi bi-box-arrow-up-right"></i></a>
+        </p>
+        <h2 id="wifiBalance" class="fw-bold mb-0" style="color: #16a34a; font-size: 2rem;">₱ 1,150.00</h2>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <button type="button" id="btnWifiWithdraw" class="btn cc-btn-orange d-inline-flex align-items-center gap-2 px-3 py-2">
+            <i class="bi bi-cash-stack" style="font-size: 0.95rem;"></i> Withdraw
+        </button>
+        <a href="/gsc-cebu/payments/wifi/withdrawals" class="text-decoration-none"
+           title="Open WiFi withdrawal history" style="color: #94a3b8; font-size: 0.80rem;"><i class="bi bi-box-arrow-up-right"></i></a>
+    </div>
+</div>
+<p class="mt-1 mb-3" style="font-size: 0.75rem; color: #94a3b8;">Not yet withdrawn · 42 vouchers</p>
+```
+
+- **The arrow sits beside the action, never inside it.** A link nested in a button is invalid markup and the browser will not let both be pressed.
+- **The caption says what the figure is not.** "Not yet withdrawn" tells the reader this is a running balance rather than a day's takings; without it, two totals on one dashboard read as a contradiction.
+- **A zero balance says where the money went.** Once the action has emptied it, the caption names the last time it did: `Last withdrawn ₱ 135.00 on 24 Sep 2026, 11:29 AM by Maria Santos.` A bare "Nothing to withdraw" beside sales the cashier knows they made reads as money gone missing. Only a balance that has never been emptied says "Nothing to withdraw yet."
+- **Nothing to take out disables the action** rather than hiding it, so the card keeps its shape all day.
+
+### `hidden` loses to a display utility
+
+An element that carries both the `hidden` attribute and `d-flex` stays on screen: `.d-flex` is `display: flex !important`, and `hidden` is only a user-agent rule. Paging bars, banners and toolbars are the usual victims, because those are the ones written as flex rows and toggled from script.
+
+```css
+/* Put the attribute back in charge, for the whole page or one card. */
+[hidden] { display: none !important; }
+```
+
+Add this to any view whose script toggles `hidden` on a flex row. The alternative — swapping `d-none` for `d-flex` in script — also works, but every toggle then has to remember two classes, and the first one forgotten is a bar that will not go away.
 
 ---
 
@@ -1809,6 +1925,7 @@ For applications where a selection made once — a site, a workspace, a client �
 - `nav flex-column gap-1` — never `nav-pills`, never `list-group`
 - Item label `0.82rem`, icon `0.95rem`, radius `8px`, border `1.5px` — the tab pill treatment, so both navigations read as one family
 - Groups are introduced by the standard section label; two or three groups at most
+- **One area, no group.** When everything inside the scope belongs to a single area, list its pages directly under the header — no section label, no parent item that only opens its children. A group of one, or a parent that exists to expand, is a level the reader passes through on every visit for nothing, and choosing the scope should open its first page, not a menu of the one area it contains. The app's campus nav is this case: Overview, Payment, Disbursement, with picking a campus opening Overview
 - The header states **what is selected** and offers one way back to change it. Without it the user cannot tell which scope they are in, which is the whole failure this pattern exists to prevent
 - **The nav sits in `col-12 col-md-3`; the page it scopes renders in `col-12 col-md-9`** — a quarter and three quarters from the breakpoint up, stacked full width below it, where there are no two columns to divide. Both widths live on that pair and nowhere else: the nav card declares none of its own, nothing inside it is given one, and **there is no pixel width anywhere in the pattern** — collapsed, the rail is as wide as an icon and the card's padding make it. The row holding the two columns is what carries the collapsed state
 
@@ -1877,7 +1994,7 @@ The nav collapses to a column of icons and gives the room back to the page. A ch
 }
 ```
 
-Four rules, each of which is the whole of a bug if it is missed:
+Five rules, each of which is the whole of a bug if it is missed:
 
 - **`min-width: 0` on the body column is load-bearing.** A flex item defaults to `min-width: auto` and refuses to shrink below its content's intrinsic width. Any page holding something wider than the viewport — a data grid, a wide table — then overflows the row and **wraps below the rail**, leaving a column of icons alone at the top of the page. The expanded state never shows it, because `col-md-9` pins `width: 75%` outright; collapsing replaces that pin with a flexible one and has to restore the floor by hand.
 
@@ -2011,6 +2128,29 @@ The last row in a group drops `border-bottom`.
 ```
 
 `flex-shrink-0` on fixed elements, `ms-auto` to push the amount right, `text-truncate` + `max-width` on free text.
+
+### Paging a list
+
+A list of rows longer than **15** shows 15 at a time, with a range and Previous / Next under it. The range reads `1–15 of 21` (en dash, no "Showing"); both buttons are neutral, and the one that cannot move is `disabled` rather than hidden, so the bar keeps its shape.
+
+```html
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3" id="recentPaging" data-page-size="15">
+    <span id="recentRange" style="font-size: 0.75rem; color: #94a3b8;">1–15 of 21</span>
+    <div class="d-flex align-items-center gap-2">
+        <button type="button" id="recentPrev" class="btn cc-btn-neutral d-inline-flex align-items-center gap-1 px-3 py-1" disabled>
+            <i class="bi bi-chevron-left" style="font-size: 0.70rem;"></i> Previous
+        </button>
+        <button type="button" id="recentNext" class="btn cc-btn-neutral d-inline-flex align-items-center gap-1 px-3 py-1">
+            Next <i class="bi bi-chevron-right" style="font-size: 0.70rem;"></i>
+        </button>
+    </div>
+</div>
+```
+
+- **When every row arrives in one answer** (today's payments), page in the browser: draw only the current page's rows from the array, and keep the bar `hidden` until there are more than 15. If the server draws the rows instead, draw the first 15 visible and the rest `hidden`, with the first range already written, so the card is right before any script runs.
+- **When the list is fetched page by page** (histories), the API pages and the bar is filled from its `total`.
+- **No bar at all for 15 rows or fewer.** A pager with nowhere to go is noise.
+- Rows written as `.d-flex` links need [`[hidden] { display: none !important; }`](#hidden-loses-to-a-display-utility) scoped to their card, or the hidden ones stay on screen.
 
 ### Selectable action row
 
@@ -2267,6 +2407,18 @@ $.ajax({
 ```
 
 Reference implementation: Chemical Krypton's Finance Overview, `Views/Finance/Index.cshtml`.
+
+### A page that used to arrive filled
+
+A server-rendered page that waits on the API before it sends anything shows a blank screen for as long as the API takes. Skeletons cannot help while the figures are drawn on the server, so the page is split:
+
+- **The action keeps the session check and sends the shell.** A broken cookie is still refused before anything is drawn, with the same message as before.
+- **The data moves to a JSON endpoint** that makes the same API reads, returns `{ success, message, ... }`, and keeps every failure message the page used to show.
+- **Every figure on the page is a skeleton slot**, including the ones in cards whose other contents are static — a counter's label and gradient bar render for real, only the number waits.
+- **When the read fails, the shell gives way to the page's own error card**, not to a dashed state in every panel: the page used to show only that card when its figures failed, and a screen of eight "could not load" boxes says the same thing eight times.
+- **A list the server used to draw is drawn by the script** with exactly the markup it had, strings escaped, so nothing about a row changes but when it appears.
+
+Reference implementation: Chemical Krypton's Payments dashboard, `Views/Payments/Index.cshtml` with `{locality}/payments/dashboard`. It arrives in 0.7 s instead of 1.7 s.
 
 ---
 
@@ -2589,6 +2741,53 @@ function RestoreButtons() {
 
 `RestoreButtons()` must reverse **every** disable from step 2. A field disabled on submit but not re-enabled on failure is the most common bug in this pattern.
 
+### Active confirmation
+
+A confirmation that only restates the data is read the first few times and clicked through ever after. Where people keep saving the **same kinds of mistakes despite a confirmation** — money and identity on a receipt — make the modal ask for something it cannot get without reading:
+
+- **Tick rows.** Each detail that goes wrong (payee, grade, every line item; on an official receipt its OR number and date; for a cheque its bank, number and issue date; for an online transfer the account, reference number and transfer date) is a row the user must tick. A row is the whole line, not a small box: click anywhere on it, or focus it and press Space/Enter. Only the error-prone rows get ticks; ticking everything turns the check back into a ritual.
+- **Type-back.** The user types the figure that matters (the amount actually collected). It is compared, not copied — the total stays on screen, because the point is checking the cash in hand against it, and a mismatch is reported only once they leave the field, never on every keystroke.
+- **The confirm button is disabled** until every tick is in and the typed figure matches, with a progress line beside the buttons saying what is left.
+- **Everything resets each time the modal opens**, including after *Go Back & Edit*, so a tick never vouches for a detail changed since.
+
+```html
+<div data-cc-check class="d-flex justify-content-between align-items-center mb-2">
+    <span style="font-size: 0.70rem; text-transform: uppercase; letter-spacing: 0.07em;
+                 color: #94a3b8; font-weight: 600;">Payee Name</span>
+    <span id="confirm_paid_by" class="fw-semibold" style="font-size: 0.88rem; color: #1e293b;"></span>
+</div>
+
+<div class="mt-3">
+    <label for="confirm_amount_collected" class="mb-1"
+           style="font-size: 0.78rem; font-weight: 600; color: #475569;">Type the amount you collected from the payee</label>
+    <div class="position-relative">
+        <span class="position-absolute top-50 translate-middle-y"
+              style="left: 12px; color: #94a3b8; font-size: 0.88rem; font-weight: 600;">&#8369;</span>
+        <input type="text" id="confirm_amount_collected" class="form-control" inputmode="decimal"
+               autocomplete="off" placeholder="0.00"
+               style="padding-left: 28px; border-radius: 8px; font-size: 0.92rem; font-weight: 600; color: #1e293b;" />
+    </div>
+    <div id="confirm_amount_hint" class="mt-1" style="font-size: 0.75rem; color: #e11d48;" hidden></div>
+</div>
+
+<!-- footer -->
+<span id="confirm_progress" class="me-auto" style="font-size: 0.75rem; color: #64748b;" aria-live="polite"></span>
+<button type="button" data-cc-confirm disabled id="btnConfirmAndSave" ...>Confirm &amp; Save</button>
+```
+
+| State | Treatment |
+|---|---|
+| Rows' container | each group (details, line items) in its own grey card — `rounded p-3 mb-3`, `#f8fafc` with a `1px #e2e8f0` border, section label inside — so the line items read as one set to tick, like the details above them. Inside the card each line is its own box, `0.375rem` apart, with no separator rule: a rule (or rows pressed together) cuts through a ticked line's green border and makes adjacent ticked lines look like one block |
+| Row unticked | slate `bi-circle` (`#cbd5e1`), row transparent; hover `#ffffff` (a grey hover would vanish on the grey card) |
+| Row ticked | green `bi-check-circle-fill` (`#16a34a`) on `#f0fdf4` with a `#86efac` border — green because ticking confirms a record about to be created |
+| Row focused | `#93c5fd` border (keyboard) |
+| Progress line ("3 of 4 checked · amount matches") | `#e11d48` while anything is missing — ticks or a matching amount — so what is left is the first thing seen; `#16a34a` once the button may be pressed |
+| Amount matches | `#86efac` border |
+| Amount differs (after leaving the field) | `#fda4af` border, `#e11d48` sentence naming the total |
+| Confirm not yet allowed | `disabled`, `opacity: 0.5`, `cursor: not-allowed` |
+
+The behaviour lives in one shared script (`Scripts/payment-confirm-check.js` in Chemical Krypton) wired to `[data-cc-check]` rows and the `[data-cc-confirm]` button; the page keeps filling the modal and saving exactly as before. Rows are `role="checkbox"` with `aria-checked`. The ticked-state classes are styled from a `<style>` block (the script adds one), since a script toggles them and inline styles would outrank them. Amounts compare in centavos and accept `1000`, `1,000` and `₱1,000.00`.
+
 ### Currency handling
 
 Amounts are stored as formatted strings in the DOM and stripped before submission. Always `parseFloat`, never `parseInt` — `parseInt` silently truncates centavos.
@@ -2820,6 +3019,8 @@ For the pages that sit *inside* a selection. The [side navigation](#side-navigat
 
 The selection itself is made on a **Dashboard** — a page of selectable rows, one per available scope, plus whatever configuration is genuinely scope-independent. That page is the only route back out, so it is what the side nav's "Change" link points at.
 
+Picking a scope lands on its **first page** (the one at the top of the side nav), never on an empty landing page inside the scope. A scope with a single area drops the group labels shown above and lists its destinations straight under the header.
+
 ---
 
 ## Migration guide
@@ -2934,13 +3135,19 @@ Before shipping a view, confirm:
 - [ ] Every panel filled by a request shows a skeleton first, and every skeleton ends — in data or in an error state
 - [ ] Every modal opened over another either waits for `hidden.bs.modal` or is lifted above it
 - [ ] Every currency value is right-aligned, bold, and semantic-colored
+- [ ] A count of what is left is a tile's only coloured figure, and nothing left is a dashed box rather than a disabled button
+- [ ] Every detail link beside an action sits outside the button, never nested inside it
+- [ ] Any view whose script toggles `hidden` carries `[hidden] { display: none !important; }`
+- [ ] Every list longer than 15 rows pages at 15, with a `1–15 of N` range and Previous / Next
 - [ ] Every write action passes through a confirmation modal
+- [ ] A confirmation people keep clicking through is active: the error-prone details are ticked, the key figure is typed back, and the button stays disabled until both are done
 - [ ] Every disable on submit is reversed in `RestoreButtons()`
 - [ ] Every `parseInt` on a currency value is `parseFloat`
 - [ ] Tab and any other `.active`-driven styling lives in a `<style>` block
 - [ ] Search inputs use absolute positioning, not `input-group`
 - [ ] Stacked action buttons share a fixed `width` and `height`
 - [ ] Side-by-side cards use `h-100`
+- [ ] A side nav with one area lists its pages directly — no group label, no parent item — and picking the scope opens the first of them
 
 ---
 
