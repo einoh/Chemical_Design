@@ -41,6 +41,7 @@ Version 1.0 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+
 - [Badges and pills](#badges-and-pills)
 - [Avatars and photos](#avatars-and-photos)
 - [Modals](#modals)
+  - [Image viewer](#6-image-viewer)
 - [Tabs](#tabs)
 - [Side navigation](#side-navigation)
 - [Detail rows](#detail-rows)
@@ -1447,7 +1448,7 @@ is required inside any flex row, as with icon bubbles.
 
 ## Modals
 
-There are **four** modal variants. Do not invent a fifth.
+There are **six** modal variants (plus the navigation modal, a form modal holding links). Do not invent a seventh.
 
 All share:
 
@@ -1726,6 +1727,30 @@ A variant of the form modal whose body is a list of destinations rather than inp
     </div>
 </div>
 ```
+
+### 6. Image viewer
+
+For uploaded scans — vouchers, receipts — that have to be **read**, not just recognised. A thumbnail in a card is too small to check an amount or a signature, so every uploaded image opens large on click, with zoom.
+
+**The thumbnail is the control.** No separate "View" button: the image itself is `role="button"`, `tabindex="0"`, opens on click, Enter or Space, and says so with `cursor: zoom-in` and a `#93c5fd` border plus a soft blue ring on hover and focus. Its `aria-label` names it and its place — "Enlarge receipt image 2 of 3". Whatever sits under it (a Remove button) is untouched.
+
+```html
+<img src="…" class="img-fluid rounded" data-cc-viewer="receipt"
+     aria-label="Enlarge receipt image 2 of 3" style="border: 1px solid #e2e8f0;" />
+```
+
+The viewer (`#modalImageViewer`) is built by the shared script, not written into the page:
+
+- `modal-dialog-centered modal-xl`, white, the blue gradient bar — the one modal allowed to be wider than the default, because its whole job is size.
+- **Header:** the title ("Receipt Image · 2 of 3", the counter only when there is more than one) on the left; on the right a toolbar of neutral soft-tint buttons — zoom out, the zoom level as a percentage, zoom in, **Fit** — then the close button. On a phone the toolbar wraps under the title.
+- **Body:** a `#f8fafc` viewing area about 75% of the screen tall. The image opens **fitted** to it, and fitted is what 100% means — never enlarged past the image's own size to get there.
+- **Zoom** in 25% steps from 50% to 500%; each button disables at its limit. The mouse wheel zooms around the pointer. Every new image starts fitted again.
+- **Move** a zoomed image by dragging (mouse, pen or finger; `grab` / `grabbing` cursors). An axis that fits on screen stays centred, and the image cannot be dragged off the viewing area.
+- **Previous / next** are round white buttons at the sides, only when the group has more than one image; a group is one card's images (`data-cc-viewer="voucher"` and `"receipt"` are separate), and the arrows wrap.
+- **Keys:** `+` / `-` zoom, `0` fits, `←` / `→` step, Esc closes. Closing returns focus to the thumbnail that opened it.
+- **A file that cannot be loaded** shows a centred slate image icon and "This image could not be loaded." in the viewing area — never an empty box.
+
+The behaviour lives in `Scripts/image-viewer.js` (Chemical Krypton): any `img[data-cc-viewer]` on a page loading it becomes a thumbnail. Its states are styled from the `<style>` block the script adds, because the script toggles them.
 
 ### Stacking
 
@@ -3132,6 +3157,7 @@ Before shipping a view, confirm:
 - [ ] Every section opens with a `0.70rem` uppercase label
 - [ ] Every table has `table-responsive`, a `2px` header rule, and `1px` row dividers
 - [ ] Every empty collection renders a dashed empty state with an icon
+- [ ] Every uploaded image is a thumbnail that opens in the image viewer, with zoom
 - [ ] Every panel filled by a request shows a skeleton first, and every skeleton ends — in data or in an error state
 - [ ] Every modal opened over another either waits for `hidden.bs.modal` or is lifted above it
 - [ ] Every currency value is right-aligned, bold, and semantic-colored
