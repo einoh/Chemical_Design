@@ -65,6 +65,10 @@ Version 1.0 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+
 - [Page templates](#page-templates)
 - [Migration guide](#migration-guide)
 
+**Email**
+- [Transactional email](#transactional-email)
+  - [Before an email ships](#before-an-email-ships)
+
 ---
 
 # Getting started
@@ -3142,6 +3146,241 @@ Replace `modal-header` / `modal-body` / `modal-footer` defaults with one of the 
 ### 8. Tabs
 
 Move all styling out of inline attributes into a `<style>` block keyed on the tab list's `id`. Change `nav-tabs` to `nav gap-2`.
+
+---
+
+# Email
+
+## Transactional email
+
+Email an application sends on its own — a reminder, a notice, an announcement — keeps the system's palette but **none of its mechanics**. It is drawn by Gmail, Outlook and phone mail apps, not a browser: Bootstrap and its icon font are not there, a `<style>` block is dropped or mangled, `box-shadow` and `linear-gradient` are ignored, and images stay blocked until the reader allows them. So an email is built the way email has to be — tables for layout, every style inline — and this is the one part of the system where the [`<style>` block principle](#principles), the card anatomy and the ban on solid fills give way.
+
+The reference is the **timekeeping reminder**, HR's approved design: Google's announcement layout — a centred white card, a large headline, an event block, a blue call to action and a grey "why" box — in this system's colours. It is built by `Services/Mailroom/AttendanceReminderEmail.cs` (Chemical Cesium); start a new email from that file, not from scratch.
+
+![The timekeeping reminder as Gmail draws it](images/email-timekeeping-reminder.png)
+
+### Anatomy
+
+```
+              page #f1f5f9, the full width of the window
+     ┌─ at most 600px ──────────────────────────────────────┐
+     │ Golden Success · My Account        ← wordmark, text  │
+     ├─ card: white, 1px #e2e8f0, square, no shadow ────────┤
+     │ [Test banner]                      ← a test only     │
+     │ You have 2 days                    ← headline, 30px  │
+     │ to complete                                          │
+     │ Timekeeping reminder · Thursday, 15 October 2026     │
+     │ ──────────────────────────────────────────────────── │
+     │ End-of-month payroll               ← event block     │
+     │ 13 – 27 October 2026   File by Tuesday, 27 October   │
+     │ Checked from 13 October up to yesterday, 14 October  │
+     │ [ Open my timekeeping ]            ← call to action  │
+     │ Hi Juan Dela Cruz,                                   │
+     │ What happened, and what it means                     │
+     │ ──────────────────────────────────────────────────── │
+     │ Tue, 13 Oct 2026   Absent · …   Request correction   │ ← item rows
+     │ ──────────────────────────────────────────────────── │
+     │ Conditional note · How to act (bullets) · Deadline   │
+     │ [ Open my timekeeping ]            ← the same, again │
+     │ Thank you, HR                      ← sign-off        │
+     │ ┌ Why am I getting this? ───────────────────────────┐│
+     │ └ when it is sent, and what stops it ───────────────┘│
+     └──────────────────────────────────────────────────────┘
+       Golden Success                      ← footer, outside the card
+       © 2026 Golden Success University & College Inc. · my.golden-success.com
+       This is an automated message … contact HR at your campus.
+```
+
+The call to action appears twice: under the event block for the reader who acts at once, and under the instructions for the one who reads first.
+
+### Colours
+
+Hex values, written into every `style` — there is no `Ui.cs` and no variable in an email.
+
+| Role | Value | Use |
+|---|---|---|
+| Page | `#f1f5f9` | Outer background, and the colour of the hidden preheader |
+| Card | `#ffffff`, `1px solid #e2e8f0` | The one card. Square: no radius, no shadow, no gradient bar |
+| Ink | `#0f172a` | Headline, event title, item dates, bold leads, the sign-off's name |
+| Body | `#334155` | Paragraphs, bullets, item detail, the event's dates |
+| Muted | `#64748b` | Date line, "checked from" line, "· My Account", footer |
+| Rule | `#e2e8f0` | Card border, the event block's top rule, item rows |
+| Blue | `#2563eb` | Wordmark, the button's fill, inline links, the "why" heading |
+| Danger | `#e11d48` | The status word in an item row — *Absent*, *No time-out* |
+| Warn | `#c2410c` | The deadline — *File by …* — and the test banner's text |
+| Note box | `#f8fafc` fill, `#475569` text | The "why" box |
+| Test banner | `#fff7ed` fill, `1px solid #fed7aa`, `#c2410c` text | |
+
+Ink is darker than the screens' primary text (`#1e293b`) and Body sits between it and `#475569`. Colour still carries meaning: blue is what you can press, red is what is wrong, orange is the deadline. Nothing else is coloured.
+
+### Type
+
+`Arial, Helvetica, sans-serif` throughout, **restated on every table cell** — some Outlook versions do not inherit a font into a table. Sizes are in `px`, never `rem`: not every mail client resolves one.
+
+| Role | Size / line height | Weight | Colour |
+|---|---|---|---|
+| Wordmark | `20px` (`15px` in the footer) | bold | Blue |
+| Headline | `30px` / `36px` | bold | Ink |
+| Date line | `14px` | normal | Muted |
+| Event title | `16px` | bold | Ink |
+| Event dates | `15px` / `26px` | normal, deadline bold | Body, deadline Warn |
+| Paragraph, bullet | `14px` / `22px` | normal, lead bold | Body, lead Ink |
+| Item row | `14px` | date and status bold | Ink · Danger · Blue |
+| Button | `14px` | bold | `#ffffff` on Blue |
+| "Why" heading / text | `14px` / `13px` `20px` | bold / normal | Blue / `#475569` |
+| Footer | `12px` / `18px` | normal | Muted |
+
+The headline is a count and what to do with it — *You have 2 days to complete* — broken onto two lines with a `<br>`.
+
+### Skeleton
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Timekeeping: 2 days to correct by 27 Oct</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f1f5f9; font-family:Arial, Helvetica, sans-serif;">
+  <!-- The preheader: the line an inbox shows beside the subject. Hidden in the message itself. -->
+  <div style="display:none; max-height:0; overflow:hidden; color:#f1f5f9;">2 days to correct in your timekeeping before 27 October.</div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f1f5f9;">
+    <tr><td align="center" style="padding:24px 12px;">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px;">
+
+        <tr><td style="padding:0 4px 14px; font-family:Arial, Helvetica, sans-serif; font-size:20px;">
+          <span style="color:#2563eb; font-weight:bold; font-size:20px;">Golden Success</span>
+          <span style="color:#64748b; font-size:15px;">&middot; My Account</span>
+        </td></tr>
+
+        <tr><td style="background-color:#ffffff; border:1px solid #e2e8f0; padding:32px 32px 28px; font-family:Arial, Helvetica, sans-serif;">
+          <!-- headline · event block · button · body · items · sign-off · why box -->
+        </td></tr>
+
+        <tr><td style="padding:20px 4px 0; font-family:Arial, Helvetica, sans-serif; font-size:12px; color:#64748b; line-height:18px;">
+          <div style="font-size:15px; margin:0 0 8px;"><span style="color:#2563eb; font-weight:bold; font-size:15px;">Golden Success</span></div>
+          &copy; 2026 Golden Success University &amp; College Inc. &middot; my.golden-success.com<br>
+          This is an automated message from no-reply@golden-success.com, and replies are not read. For questions about your attendance, contact HR at your campus.
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
+```
+
+The inner table carries `width="600"` **and** `width:100%; max-width:600px`: Outlook on the desktop ignores `max-width` and reads the attribute; everything else lets the style shrink it to a phone. Mail clients turn the footer's host and address into links on their own — they are written as text.
+
+### Pieces
+
+**Headline and date line**
+
+```html
+<div style="font-size:30px; line-height:36px; font-weight:bold; color:#0f172a; margin:0 0 6px;">You have 2 days<br>to complete</div>
+<div style="font-size:14px; color:#64748b; margin:0 0 22px;">Timekeeping reminder &middot; Thursday, 15 October 2026</div>
+```
+
+**Event block** — what the email is about, its period and its deadline, under a rule.
+
+```html
+<div style="border-top:1px solid #e2e8f0; padding-top:18px; margin:0 0 22px;">
+  <div style="font-size:16px; font-weight:bold; color:#0f172a; margin:0 0 8px;">End-of-month payroll</div>
+  <div style="font-size:15px; color:#334155; line-height:26px;">13 – 27 October 2026&nbsp;&nbsp;&nbsp; <b style="color:#c2410c;">File by Tuesday, 27 October</b></div>
+  <div style="font-size:14px; color:#64748b; line-height:24px;">Checked from 13 October up to yesterday, 14 October</div>
+</div>
+```
+
+On the last day the deadline reads *File by today, Tuesday 27 October*, and the closing paragraph changes with it.
+
+**Button** — the one solid fill in the system. On a screen a soft pill is one action among many; in an email it is the only one, drawn by a client that shows nothing else of the design.
+
+```html
+<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+  <td style="background-color:#2563eb; border-radius:4px;">
+    <a href="https://my.golden-success.com/#timekeeping"
+       style="display:inline-block; padding:12px 22px; font-family:Arial, Helvetica, sans-serif; font-size:14px; font-weight:bold; color:#ffffff; text-decoration:none;">Open my timekeeping</a>
+  </td>
+</tr></table>
+```
+
+The fill is on the **cell**, not the link: Outlook ignores `display` and `padding` on an `<a>`, so there the button is smaller — never missing.
+
+**Paragraph and bullets**
+
+```html
+<p style="font-size:14px; color:#334155; line-height:22px; margin:0 0 14px;">…</p>
+
+<ul style="font-size:14px; color:#334155; line-height:22px; margin:0 0 18px; padding-left:20px;">
+  <li style="margin:0 0 8px;"><b style="color:#0f172a;">Attach proof:</b> one to five photos, JPEG, at most 1 MB each.</li>
+</ul>
+```
+
+The greeting and the sign-off are paragraphs with `margin-top:24px`, to clear the button above each:
+
+```html
+<p style="font-size:14px; color:#334155; line-height:22px; margin:24px 0 14px;">Thank you,<br><b style="color:#0f172a;">HR</b></p>
+```
+
+**Item rows** — one per thing to act on, each with its own link straight to it.
+
+```html
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; margin:0 0 18px;">
+  <tr>
+    <td style="padding:10px 0; border-top:1px solid #e2e8f0; font-family:Arial, Helvetica, sans-serif; font-size:14px; color:#0f172a; font-weight:bold; width:38%;">Tue, 13 Oct 2026</td>
+    <td style="padding:10px 0; border-top:1px solid #e2e8f0; font-family:Arial, Helvetica, sans-serif; font-size:14px; color:#334155;"><span style="color:#e11d48; font-weight:bold;">Absent</span> &middot; no tap on a duty day</td>
+    <td style="padding:10px 0; border-top:1px solid #e2e8f0; font-family:Arial, Helvetica, sans-serif; font-size:14px; text-align:right;"><a href="https://my.golden-success.com/timekeeping/correction?date=2026-10-13" style="color:#2563eb; font-weight:bold; text-decoration:none;">Request correction</a></td>
+  </tr>
+</table>
+```
+
+The rules are on the **cells**, never the `<tr>`, which most clients will not draw a border on; the last row's cells also carry `border-bottom:1px solid #e2e8f0`. A link names the item the way the page's own route does — here a date — never a database id.
+
+**"Why" box** — every automated email ends with one: when it is sent, and what stops it.
+
+```html
+<div style="background-color:#f8fafc; padding:16px 18px; margin-top:26px;">
+  <div style="font-size:14px; font-weight:bold; color:#2563eb; margin:0 0 4px;">Why am I getting this?</div>
+  <div style="font-size:13px; color:#475569; line-height:20px;">My Account sends this every weekday at 8:00 AM while a day in the current payroll cut-off can still be corrected. It stops once your days are complete or corrected, or when the payroll's filing closes.</div>
+</div>
+```
+
+**Test banner** — first thing in the card when the message is a test, and the subject starts `[Test] `.
+
+```html
+<div style="background-color:#fff7ed; border:1px solid #fed7aa; color:#c2410c; font-size:13px; line-height:20px; padding:10px 14px; margin:0 0 20px;">
+  <b>Test from the Mailroom.</b> The days below are a sample, not your record.
+</div>
+```
+
+### Rules
+
+- **Tables for layout**, each `role="presentation"` with `cellpadding`, `cellspacing` and `border` at `0`. `<div>`s only inside a cell.
+- **Every style inline.** No `<style>` block, no `class`, no external stylesheet.
+- **No image.** The wordmark is text: nothing to block, nothing to host, and a reader with images off sees the whole message. No icons either — Bootstrap Icons is a font the client does not have.
+- **No script, no form.** Every action is a link to a page in the application, which does the work behind its own sign-in.
+- **Every value HTML-encoded**, a name above all — it comes from the identity server, not from the application sending the email. Links are encoded too.
+- **Links are absolute, built from a configured public address** (`Mail:PublicBaseUrl` in Cesium). A message written by a background job has no request to read a host from, and must never carry `localhost`.
+- **A plain-text part goes with the HTML**, carrying the same facts and every link written out in full.
+- **The subject states the count and the deadline** — *Timekeeping: 2 days to correct by 27 Oct* — and the preheader says it again in words.
+- **Dates are written out**, day before month — *Tuesday, 27 October*, *Tue, 13 Oct 2026* — never `10/13`, in the invariant culture so a server's locale cannot change them.
+- **Say what happened, what to do, by when, and what stops it.** A paragraph that only applies sometimes is left out when it does not — the leave note appears only when an absent day is listed.
+- **Signed by the office responsible** (*Thank you, HR*), sent from the no-reply address, and the footer says who to ask instead, since replies are not read.
+
+### Before an email ships
+
+- [ ] Every layout is a `role="presentation"` table; no `<style>`, `class` or image anywhere
+- [ ] `font-family` is on every `<td>`, sizes are in `px`
+- [ ] The inner table has `width="600"` and `max-width:600px`
+- [ ] The button's fill is on its `<td>`; item rules are on cells, not rows
+- [ ] Every value and every link is HTML-encoded, and every link is absolute from the configured public address
+- [ ] A plain-text part carries the same facts and links
+- [ ] The subject and preheader state the count and the deadline
+- [ ] It ends with a "why" box and a footer saying who to contact
+- [ ] A test is marked in the subject and with the test banner
+- [ ] A test has been sent to a real inbox and read on a phone
 
 ---
 
