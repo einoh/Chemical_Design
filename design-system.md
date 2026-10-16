@@ -44,6 +44,7 @@ Version 1.0 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+
   - [Image viewer](#6-image-viewer)
 - [Tabs](#tabs)
 - [Side navigation](#side-navigation)
+  - [In an application shell](#in-an-application-shell)
 - [Detail rows](#detail-rows)
 - [Empty states](#empty-states)
 - [Loading states](#loading-states)
@@ -755,10 +756,10 @@ signed-in user on the right, and nothing else.
 ```html
 <header style="background-color: #fff; border-bottom: 1px solid #e2e8f0;">
     <div class="container-fluid px-4">
-        <div class="d-flex align-items-center justify-content-between" style="height: 52px;">
+        <div class="d-flex align-items-center justify-content-between gap-3" style="height: 52px;">
 
             <!-- identity, and the one guaranteed way home -->
-            <a href="/" class="text-decoration-none d-inline-flex align-items-center gap-2">
+            <a href="/" class="text-decoration-none d-inline-flex align-items-center gap-2 flex-shrink-0">
                 <span class="d-inline-flex align-items-center justify-content-center rounded-circle"
                       style="width: 28px; height: 28px; background-color: #eff6ff;">
                     <i class="bi bi-journal-text" style="font-size: 0.85rem; color: #2563eb;"></i>
@@ -766,17 +767,17 @@ signed-in user on the right, and nothing else.
                 <span style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">Chemical Carbon</span>
             </a>
 
-            <!-- the user menu -->
-            <div class="dropdown">
-                <a class="text-decoration-none d-inline-flex align-items-center gap-2 px-2 py-1"
+            <!-- the user menu; min-width: 0 down this chain lets a long name truncate on a phone -->
+            <div class="dropdown" style="min-width: 0;">
+                <a class="text-decoration-none d-inline-flex align-items-center gap-2 px-2 py-1 mw-100"
                    href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false"
-                   style="font-size: 0.85rem; color: #475569;">
-                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle"
+                   title="Nicanor Nuñez" style="font-size: 0.85rem; color: #475569;">
+                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
                           style="width: 26px; height: 26px; background-color: #f1f5f9;">
                         <i class="bi bi-person-fill" style="font-size: 0.80rem; color: #64748b;"></i>
                     </span>
-                    Nicanor Nuñez
-                    <i class="bi bi-chevron-down" style="font-size: 0.68rem; color: #94a3b8;"></i>
+                    <span class="text-truncate">Nicanor Nuñez</span>
+                    <i class="bi bi-chevron-down flex-shrink-0" style="font-size: 0.68rem; color: #94a3b8;"></i>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0"
                     aria-labelledby="userMenu" style="min-width: 240px;">
@@ -807,7 +808,7 @@ signed-in user on the right, and nothing else.
 
 | | |
 |---|---|
-| Height | `52px`, fixed — the page below is measured against it |
+| Height | `52px`, fixed, plus its `1px` bottom border — a page measured against the bar subtracts `53px` |
 | Identity bubble | 28px, the [icon bubble](#icon-bubbles) treatment in the primary tone |
 | App name | `0.88rem` / `700` in the darkest neutral |
 | User bubble | 26px, neutral — a person, not a status |
@@ -820,6 +821,16 @@ signed-in user on the right, and nothing else.
   exist goes with it.
 - **The identity is a link home.** Whatever a user has got themselves into, the top-left corner
   is the way out. It is the only navigation the bar is allowed.
+- **The one control it gains is a menu button, and only on a phone.** An application whose side
+  nav sits in a [shell](#in-an-application-shell) puts a `bi-list` button before the identity,
+  drawn below `md` only (`d-md-none`), that opens the side nav as a drawer. It reveals the side
+  nav's destinations rather than adding one, so the rule above still holds. Elsewhere nothing
+  opens the side nav: a scoped workspace's nav stacks above the page on its own.
+- **A long name truncates; it never widens the bar.** `min-width: 0` on the dropdown, `mw-100` on
+  its trigger and `text-truncate` on the name let the name give way on a phone, where a long one
+  would otherwise push the bar wider than the screen. The bubbles and the chevron carry
+  `flex-shrink-0` so they keep their shape, the name moves into a `title`, and the menu's
+  "Signed in as" still says it in full.
 - **Sign out is a `<form method="post">` with a token, never a link.** A GET that ends a session
   is followed by the first prefetcher, link-checker or over-eager browser that meets the page —
   the same rule the [side nav's collapse toggle](#collapsible-rail) obeys, and for the same reason.
@@ -1956,7 +1967,7 @@ For applications where a selection made once — a site, a workspace, a client �
 - Groups are introduced by the standard section label; two or three groups at most
 - **One area, no group.** When everything inside the scope belongs to a single area, list its pages directly under the header — no section label, no parent item that only opens its children. A group of one, or a parent that exists to expand, is a level the reader passes through on every visit for nothing, and choosing the scope should open its first page, not a menu of the one area it contains. The app's campus nav is this case: Overview, Payment, Disbursement, with picking a campus opening Overview
 - The header states **what is selected** and offers one way back to change it. Without it the user cannot tell which scope they are in, which is the whole failure this pattern exists to prevent
-- **The nav sits in `col-12 col-md-3`; the page it scopes renders in `col-12 col-md-9`** — a quarter and three quarters from the breakpoint up, stacked full width below it, where there are no two columns to divide. Both widths live on that pair and nowhere else: the nav card declares none of its own, nothing inside it is given one, and **there is no pixel width anywhere in the pattern** — collapsed, the rail is as wide as an icon and the card's padding make it. The row holding the two columns is what carries the collapsed state
+- **The nav sits in `col-12 col-md-3`; the page it scopes renders in `col-12 col-md-9`** — a quarter and three quarters from the breakpoint up, stacked full width below it, where there are no two columns to divide. Both widths live on that pair and nowhere else: the nav card declares none of its own, nothing inside it is given one, and **there is no pixel width anywhere in the pattern** — collapsed, the rail is as wide as an icon and the card's padding make it. The row holding the two columns is what carries the collapsed state. (An application whose side nav is its only menu has no such grid: see [In an application shell](#in-an-application-shell).)
 
   ```html
   <div class="row g-3 cc-nav-collapsed">           <!-- the class only when collapsed -->
@@ -2003,8 +2014,9 @@ The nav collapses to a column of icons and gives the room back to the page. A ch
 ```
 
 ```css
-/* Below the breakpoint the columns stack full width — there is no room to
-   reclaim, so the control is not drawn at all. */
+/* Below the breakpoint the columns stack full width (in an application shell
+   the column is a drawer instead) — there is no rail to collapse to, so the
+   control is not drawn at all. */
 @media (max-width: 767.98px) { .cc-nav-toggle-form { display: none; } }
 
 @media (min-width: 768px) {
@@ -2016,8 +2028,10 @@ The nav collapses to a column of icons and gives the room back to the page. A ch
                                      min-width: 0; }
 
     .cc-nav-collapsed .cc-nav-label               { display: none; }
-    .cc-nav-collapsed .cc-sidenav-card .card-body { padding-left: 0.75rem;
-                                                    padding-right: 0.75rem; }
+    /* !important because the card body's px-3 is a utility, and every Bootstrap
+       utility is !important: without it this rule silently never applies. */
+    .cc-nav-collapsed .cc-sidenav-card .card-body { padding-left: 0.75rem !important;
+                                                    padding-right: 0.75rem !important; }
     .cc-nav-collapsed .cc-sidenav .nav-link       { justify-content: center; }
     .cc-nav-collapsed .cc-nav-toggle-form         { justify-content: center; }
 }
@@ -2073,6 +2087,124 @@ preference silently stops persisting on every developer's machine.
 
 **`IsEssential`** keeps it out of consent gating — it stores a layout choice the user made, not
 anything about them.
+
+### In an application shell
+
+Everything above is the **scoped workspace**: a nav card in the page grid that stacks above the
+page below `md`, which is the right answer there — a phone scrolls past a short scoped menu to the
+page it scopes. Some applications have no selection to scope by: the application itself is the
+scope, the [application bar](#application-bar) carries no destinations, and the side nav is not a
+second menu bar but the only one (the admin portal; Krypton's sidebar). That nav lives in a
+**shell** — a full-height column beside every page, under the bar, with the page column scrolling
+on its own — and stacked, its whole menu would sit above every page on a phone. So below `md` it
+becomes a **drawer**, opened from a menu button in the bar, and the page takes the full width.
+
+One element does both. `offcanvas-md` does nothing from the breakpoint up, so the column and its
+[rail](#collapsible-rail) behave exactly as on a desktop; below it the same element leaves the
+row and slides in over the page. The menu is written once.
+
+```html
+<!-- In the bar, before the identity. Below md only. -->
+<button type="button" class="d-md-none cc-nav-open"
+        data-bs-toggle="offcanvas" data-bs-target="#appNavPanel" aria-controls="appNavPanel"
+        title="Open the menu" aria-label="Open the menu">
+    <i class="bi bi-list"></i>
+</button>
+
+<!-- The shell, under the bar: 52px plus the bar's 1px border. vh first, as the fallback. -->
+<main class="d-flex flex-nowrap"
+      style="height: calc(100vh - 53px); height: calc(100dvh - 53px);">
+
+    <div class="offcanvas-md offcanvas-start d-flex flex-column flex-shrink-0 cc-nav-col"
+         id="appNavPanel" tabindex="-1" aria-labelledby="appNavTitle">
+
+        <!-- The look lives here, not on the column. -->
+        <div class="d-flex flex-column flex-grow-1 px-3 py-3"
+             style="min-height: 0; background-color: #ffffff; border-right: 1px solid #e2e8f0;">
+
+            <!-- The drawer's header. offcanvas-md hides it from the breakpoint up. -->
+            <div class="offcanvas-header justify-content-between gap-2 px-2 pt-0 pb-3 mb-2"
+                 style="border-bottom: 1px solid #f1f5f9;">
+                <a href="/" id="appNavTitle" class="text-decoration-none d-inline-flex align-items-center gap-2">
+                    <!-- the bar's identity bubble and name -->
+                </a>
+                <button type="button" class="btn-close"
+                        data-bs-dismiss="offcanvas" data-bs-target="#appNavPanel"
+                        title="Close the menu" aria-label="Close the menu"></button>
+            </div>
+
+            <ul class="nav flex-column gap-1 mb-auto" id="appNav">
+                <!-- the items, each label in a .cc-nav-label with the name in a title -->
+            </ul>
+
+            <form method="post" action="/nav-state" class="cc-nav-toggle-form pt-3"
+                  style="border-top: 1px solid #f1f5f9;">
+                <!-- the collapse toggle, as in Collapsible rail -->
+            </form>
+        </div>
+    </div>
+
+    <!-- min-width: 0 is the same load-bearing floor as the rail's. -->
+    <div class="flex-grow-1 overflow-y-auto p-3 p-md-4 cc-nav-body" style="height: 100%; min-width: 0;">
+        <!-- the page -->
+    </div>
+</main>
+```
+
+```css
+/* A shell has no grid to take a width from, so the column carries its own. The
+   two variables are read only below the breakpoint, where the column is the drawer. */
+.cc-nav-col {
+    width: 280px;
+    --bs-offcanvas-width: 280px;      /* Bootstrap's default is 400px */
+    --bs-offcanvas-border-width: 0;   /* the inner column draws the hairline */
+}
+
+/* The menu is the only part of the column that grows, so the only part that scrolls.
+   .nav is flex-wrap: wrap; in a column of fixed height that wraps a second column. */
+#appNav { overflow-y: auto; min-height: 0; flex-wrap: nowrap; }
+
+/* Styled here, not inline, so the hover wins without !important. */
+.cc-nav-open {
+    background: transparent; border: 1.5px solid transparent; border-radius: 8px;
+    color: #475569; padding: 4px 6px; font-size: 1.25rem; line-height: 1;
+    transition: all 0.2s ease;
+}
+.cc-nav-open:hover { background-color: #f8fafc; border-color: #e2e8f0; color: #1e293b; }
+
+@media (min-width: 768px) {
+    /* The rail. The state class sits on <main>; there is no grid to override. */
+    .cc-nav-collapsed .cc-nav-col          { width: auto; }
+    .cc-nav-collapsed .cc-nav-label        { display: none; }
+    .cc-nav-collapsed #appNav .nav-link    { justify-content: center; }
+    .cc-nav-collapsed .cc-nav-toggle-form  { justify-content: center; }
+}
+```
+
+Bootstrap supplies the rest of the drawer: the backdrop, Escape and a tap outside to close it,
+focus moved in and handed back to the menu button, and closing itself when the window widens past
+the breakpoint. Six rules:
+
+- **The look goes on an inner element, never on the column.** From the breakpoint up Bootstrap
+  sets `.offcanvas-md { background-color: transparent !important }`, meant for content that
+  should melt into the page, and no inline style beats `!important`. Put the white on the column
+  itself and the desktop rail silently turns the page's grey.
+- **The close button names its target.** `data-bs-dismiss="offcanvas"` looks for an ancestor
+  `.offcanvas`, and the column is `.offcanvas-md`: without `data-bs-target` the button does nothing.
+- **Every rail rule stays inside `min-width: 768px`.** The drawer always shows the full menu. A
+  `cc-nav-collapsed` rule outside the media query reaches the drawer and turns it into a column of
+  unlabelled icons for anyone who collapsed the rail on a desktop. The chevron is not drawn below
+  the breakpoint, exactly as in the card.
+- **The drawer restates the identity.** It opens over the bar's top-left corner, the way home, so
+  its header carries the same bubble and name — a link home again — beside the close button.
+  Neither the header nor the opener exists from the breakpoint up.
+- **The shell is measured with `dvh`, against `53px`.** `100vh` is the viewport with a phone's
+  toolbars hidden, so a shell sized with it runs behind them and hides the bottom of the page;
+  `100dvh` is what is actually on screen. Declare `100vh` first, for browsers without `dvh`. The
+  bar is 52px **plus its border**: measured against 52px, the document overflows by a pixel and a
+  desktop browser draws a second scrollbar beside the page column's own.
+- **The page column's padding shrinks on a phone.** `p-3 p-md-4`: at `p-4` a 375px screen gives
+  48px of its width to that padding alone, before the page's own container and cards add theirs.
 
 ### Unavailable destination
 
@@ -3413,6 +3545,8 @@ Before shipping a view, confirm:
 - [ ] Stacked action buttons share a fixed `width` and `height`
 - [ ] Side-by-side cards use `h-100`
 - [ ] A side nav with one area lists its pages directly — no group label, no parent item — and picking the scope opens the first of them
+- [ ] A side nav in an application shell is an `offcanvas-md` drawer below `md`, opened from the bar, with its white on an inner element
+- [ ] At 375px nothing scrolls sideways — neither the document nor a scrolling page column — and the application bar stays one line with a long name
 
 ---
 
@@ -3426,10 +3560,10 @@ The system is not a rejection of Bootstrap — it is a constraint on which parts
 | Flex | `d-flex`, `align-items-*`, `justify-content-*`, `gap-*`, `flex-column`, `flex-grow-1`, `flex-shrink-0`, `ms-auto` | — |
 | Spacing | `m*-*`, `p*-*` | — |
 | Text | `fw-bold`, `fw-semibold`, `text-uppercase`, `text-end`, `text-center`, `text-truncate`, `font-monospace` | `text-primary`, `text-danger`, `text-success` |
-| Sizing | `w-100`, `h-100` | — |
+| Sizing | `w-100`, `h-100`, `mw-100` | — |
 | Borders | `border-0`, `border-top`, `border-bottom`, `rounded`, `rounded-circle`, `rounded-pill` | `border-primary`, `border-3` |
 | Shadow | `shadow-sm`, `shadow` | — |
-| Components | `card`, `modal`, `nav`, `dropdown`, `table`, `form-floating`, `form-control`, `form-select`, `badge`, `breadcrumb`, `collapse` | `alert`, `list-group`, `input-group`, `nav-tabs`, `btn-*` variants |
+| Components | `card`, `modal`, `nav`, `dropdown`, `table`, `form-floating`, `form-control`, `form-select`, `badge`, `breadcrumb`, `collapse`, `offcanvas-md` (an application shell's side nav only) | `alert`, `list-group`, `input-group`, `nav-tabs`, `btn-*` variants |
 | JS | `data-bs-toggle`, `data-bs-target`, `data-bs-dismiss`, `data-bs-backdrop` | — |
 
 ---
