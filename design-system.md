@@ -41,11 +41,12 @@ Version 1.0 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+
 - [Badges and pills](#badges-and-pills)
 - [Avatars and photos](#avatars-and-photos)
 - [Modals](#modals)
-  - [Image viewer](#6-image-viewer)
+  - [Image and document viewer](#6-image-and-document-viewer)
 - [Tabs](#tabs)
 - [Side navigation](#side-navigation)
   - [In an application shell](#in-an-application-shell)
 - [Detail rows](#detail-rows)
+  - [Document row](#document-row)
 - [Empty states](#empty-states)
 - [Loading states](#loading-states)
 - [Flash messages](#flash-messages)
@@ -63,6 +64,7 @@ Version 1.0 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+
 - [Selection lists](#selection-lists)
 - [Figure grids](#figure-grids)
 - [Grouped tables](#grouped-tables)
+- [Document list card](#document-list-card)
 - [Page templates](#page-templates)
 - [Migration guide](#migration-guide)
 
@@ -562,6 +564,15 @@ on the server.
 
 A form carrying a file input needs `enctype="multipart/form-data"`. Without it the browser posts
 the *filename* as a string and the server binds no file, with nothing anywhere saying why.
+
+**A `multiple` file input lists what was chosen.** The picker's order is whatever the operating
+system's dialog chose, so the order the server will use is stated under the control in a sentence
+("Pages are numbered in file-name order, so scan2 comes before scan10") and the chosen files are
+listed beneath it, numbered as they will be stored, each with its size, then the count and total.
+A file over the per-file limit, or a total over the request limit, turns red before anything is
+posted — a preview that saves a failed upload of twenty megabytes, never the enforcement. Carbon's
+`wwwroot/js/document-upload.js` draws it for any `input[type=file][data-cc-file-list]`, reading
+`data-max-bytes` and `data-max-total`, and clears it when the modal closes.
 
 ### Number inputs
 
@@ -1743,9 +1754,9 @@ A variant of the form modal whose body is a list of destinations rather than inp
 </div>
 ```
 
-### 6. Image viewer
+### 6. Image and document viewer
 
-For uploaded scans — vouchers, receipts — that have to be **read**, not just recognised. A thumbnail in a card is too small to check an amount or a signature, so every uploaded image opens large on click, with zoom.
+For uploaded scans — vouchers, receipts, a student's PSA certificate — that have to be **read**, not just recognised. A thumbnail in a card is too small to check an amount or a signature, so every uploaded image opens large on click, with zoom.
 
 **The thumbnail is the control.** No separate "View" button: the image itself is `role="button"`, `tabindex="0"`, opens on click, Enter or Space, and says so with `cursor: zoom-in` and a `#93c5fd` border plus a soft blue ring on hover and focus. Its `aria-label` names it and its place — "Enlarge receipt image 2 of 3". Whatever sits under it (a Remove button) is untouched.
 
@@ -1766,6 +1777,36 @@ The viewer (`#modalImageViewer`) is built by the shared script, not written into
 - **A file that cannot be loaded** shows a centred slate image icon and "This image could not be loaded." in the viewing area — never an empty box.
 
 The behaviour lives in `Scripts/image-viewer.js` (Chemical Krypton): any `img[data-cc-viewer]` on a page loading it becomes a thumbnail. Its states are styled from the `<style>` block the script adds, because the script toggles them.
+
+#### Documents and PDFs
+
+The same modal, widened for a document of several pages, any of which may be a PDF. It is still variant 6 — not a seventh — because it is the same job: show one uploaded file large, and step through its group.
+
+```html
+<!-- each page is a link first: with the script blocked it opens the file in a new tab -->
+<a href="/c/1/students/9/documents/17/pages/1" target="_blank" rel="noopener"
+   data-cc-viewer="doc-17"
+   data-cc-viewer-kind="image"
+   data-cc-viewer-title="Report Card · Grade 7"
+   data-cc-viewer-unit="page"
+   data-cc-viewer-download="/c/1/students/9/documents/17/pages/1?download=true">p1</a>
+<a href="/c/1/students/9/documents/17/pages/2" target="_blank" rel="noopener"
+   data-cc-viewer="doc-17" data-cc-viewer-kind="pdf"
+   data-cc-viewer-title="Report Card · Grade 7" data-cc-viewer-unit="page">p2 pdf</a>
+
+<!-- opens the group at its first item -->
+<a href="/c/1/students/9/documents/17/pages/1" target="_blank" data-cc-viewer-open="doc-17">View</a>
+```
+
+- **Any element can be an item**, not only an `img`. `data-cc-viewer="{group}"` puts it in a group, in page order. The file is `data-cc-viewer-src`, else its `href`, else its `src`. A plain click opens the viewer; a ctrl-, shift- or middle-click is left to the browser, because it means "a new tab". `data-cc-viewer-open="{group}"` on any element opens that group at its first item.
+- **The title is `data-cc-viewer-title`**, followed by the counter when the group holds more than one item: "Report Card · Grade 7 · page 1 of 3" with `data-cc-viewer-unit="page"`, "Receipt Image · 2 of 3" without it. Krypton's hard-coded title map becomes this attribute.
+- **`data-cc-viewer-kind="pdf"` draws the item in an `<iframe>`** filling the viewing area — the browser's own PDF viewer, which already zooms, scrolls its pages and prints. **Zoom, Fit and Rotate are hidden** for it, because a second set of zoom controls over the browser's would fight it; previous/next and the counter stay. An iframe cannot report a 404, so the script asks for the first byte first and shows the "could not be loaded" state for a missing file, exactly as an image does.
+- **Rotate** (`bi-arrow-clockwise`, key `R`) turns an image 90° at a time, for reading a scan that arrived sideways. It is a way of looking, never saved, and every new item starts upright.
+- **Open in new tab** (`bi-box-arrow-up-right`) is always shown, and is how a page is printed or saved: the browser already does both well. **Download** (`bi-download`) appears when the item names `data-cc-viewer-download`, which serves the file as an attachment under a readable name — a stamp is right on disk and meaningless in somebody's Downloads folder.
+- **Serving the file:** `Cache-Control: private, no-store`, `Vary: Cookie` and `X-Content-Type-Options: nosniff` on every page. Images also get `Content-Security-Policy: sandbox`; **a PDF must not**, because Chrome refuses to draw a PDF inside a sandbox and the viewer shows an empty frame.
+- **Without the script** every item is a plain link to the file, so nothing is lost but the modal.
+
+Two implementations exist: Krypton's `Scripts/image-viewer.js` (images only, `#modalImageViewer`) and Carbon's `wwwroot/js/document-viewer.js` (images and PDFs, `#modalDocumentViewer`). **Carbon's is the superset** — copy it, not Krypton's, into the next application that needs a viewer.
 
 ### Stacking
 
@@ -2311,6 +2352,7 @@ A list of rows longer than **15** shows 15 at a time, with a range and Previous 
 - **When every row arrives in one answer** (today's payments), page in the browser: draw only the current page's rows from the array, and keep the bar `hidden` until there are more than 15. If the server draws the rows instead, draw the first 15 visible and the rest `hidden`, with the first range already written, so the card is right before any script runs.
 - **When the list is fetched page by page** (histories), the API pages and the bar is filled from its `total`.
 - **No bar at all for 15 rows or fewer.** A pager with nowhere to go is noise.
+- **Grouped rows are not paged.** A list under category sub-labels (the [Document list card](#document-list-card)) shows every row: a page boundary would split a category, and the reader would lose the heading the rows sit under.
 - Rows written as `.d-flex` links need [`[hidden] { display: none !important; }`](#hidden-loses-to-a-display-utility) scoped to their card, or the hidden ones stay on screen.
 
 ### Selectable action row
@@ -2343,6 +2385,55 @@ For lists where each row opens something. Note it is a `<button>`, not a link, w
     </div>
 </button>
 ```
+
+### Document row
+
+One uploaded document of several pages — a scan, a certificate, a form — in a list a reader opens
+files from. It is the signatory row with the pages added.
+
+```html
+<div class="d-flex flex-wrap align-items-center column-gap-3 row-gap-2 py-2"
+     style="border-bottom: 1px solid #f1f5f9;">
+    <!-- 34px icon bubble by file kind: blue image, red PDF (any page a PDF makes it red) -->
+    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+         style="width: 34px; height: 34px; background-color: #eff6ff;">
+        <i class="bi bi-file-earmark-image" style="color: #2563eb; font-size: 0.80rem;"></i>
+    </div>
+    <div class="flex-grow-1" style="min-width: 12rem;">
+        <div style="font-size: 0.85rem; font-weight: 600; color: #0f172a;">
+            Report Card <span style="font-weight: 400; color: #475569;">· Grade 7</span>
+        </div>
+        <div style="font-size: 0.75rem; color: #94a3b8;">13 Mar 2026 · Santos, Rosa · 2 pages</div>
+    </div>
+    <!-- page chips: links to each file, the viewer's group -->
+    <div class="d-flex flex-wrap align-items-center gap-1">
+        <a href="…/pages/1" target="_blank" rel="noopener" data-cc-viewer="doc-17" …
+           style="background-color: #eff6ff; border: 1px solid #93c5fd; color: #2563eb;
+                  border-radius: 20px; padding: 1px 8px; font-size: 0.72rem; font-weight: 600;">p1</a>
+        <a … data-cc-viewer-kind="pdf"
+           style="background-color: #fff1f2; border: 1px solid #fda4af; color: #e11d48; …">p2 pdf</a>
+    </div>
+    <!-- View (a link too) and the ⋯ menu for the writes -->
+    <a href="…/pages/1" target="_blank" data-cc-viewer-open="doc-17" …><i class="bi bi-eye"></i>View</a>
+    <div class="dropdown">…Edit details · Add pages · Remove…</div>
+</div>
+```
+
+- **The type is the title and the note is muted after a `·`** — the note is what tells one copy from
+  another of the same kind ("Grade 7", "SY 2024–25"), so it sits beside the type rather than under it.
+- **The meta line is date · who · how many pages**, the uploader's name and never their email.
+- **Every page is a chip, and every chip is a link** to the file, with `target="_blank"`. With the
+  viewer's script blocked, a chip opens the page in a new tab; with it, the chips are the
+  [viewer](#documents-and-pdfs)'s group. A PDF page is a red chip marked `pdf`, so a reader knows
+  before clicking that it opens in the browser's PDF viewer rather than as a picture.
+- **View is a link to page 1 carrying `data-cc-viewer-open`**, for the same reason.
+- **The writes go in a ⋯ [dropdown](#dropdowns)** — Edit details, Add pages, Remove — so a row does
+  not carry four buttons. Without the permission the ⋯ is drawn in the [unavailable](#unavailable-state)
+  state with its reason as the title, like any other withheld action.
+- **No thumbnail.** A phone photo of a page is several megabytes, and a list of thirty would make the
+  page that holds it slow for everyone who opens it to read something else. The chips are the control.
+- `flex-wrap` on the row, `min-width` on the title block: on a phone the chips and buttons drop under
+  the title rather than squeezing it to one word a line.
 
 ### Comment / note thread
 
@@ -3089,6 +3180,50 @@ parent's columns.
 - **Per-column actions belong in the column heading**, not in a toolbar above the table. If an
   action is about one column, the heading has already named it — see
   [icon-only buttons](#icon-only-buttons).
+
+---
+
+## Document list card
+
+A record's uploaded documents: its papers on file, grouped by kind. First built for a student's
+documents in Carbon (U03, migration 033), filed on disk as
+`{student_number}\{NN Category}\{Document Type}\{yyyy-MM-dd_HHmmss}_p{page}.{ext}`.
+
+```
+┌ 📁 DOCUMENTS · 6 ──────────────────────────── [⬆ Upload document] ┐
+│ IDENTITY                                                            │
+│ (🖼) PSA Certificate                       (p1)      [👁 View] [⋯] │
+│      12 Nov 2026 · Santos, Rosa · 1 page                            │
+│ PREVIOUS SCHOOL                                                     │
+│ (🖼) Report Card · Grade 7                 (p1)(p2)  [👁 View] [⋯] │
+│ (📄) Form 137                              (p1 pdf)  [👁 View] [⋯] │
+│ Each page opens in the viewer…                                      │
+└──────────────────────────────────────────────────── gradient bar ──┘
+```
+
+- **[Card anatomy](#card-anatomy)** with a [section label](#section-labels) that carries the count
+  ("Documents · 6") and the **trailing action** Upload document: Create tone, soft tint, `bi-upload`,
+  compact. Unavailable, with its reason, when the reader may not upload or the record cannot take one
+  (archived, no number to file under).
+- **Rows are grouped by category, in a fixed order**, each under a small uppercase sub-label in the
+  section-label style (Identity, Previous school, Enrollment, Scholarship and aid, Affidavits and
+  waivers, Practicum). **Only categories that hold something are drawn** — six empty headings on a
+  new record would read as six things missing. Within a category, newest first.
+- **Each row is a [Document row](#document-row).**
+- **Not paged** — see [Paging a list](#paging-a-list) — and **no thumbnails**.
+- **Empty:** the [empty state](#empty-states) with `bi-folder2-open`, naming the remedy when the
+  reader may upload ("Upload the PSA certificate, Form 137 or any other paper on file").
+- **A closing sentence** says what the viewer can do and where a removed document's files go. Removal
+  never deletes: the files move to a `_Deleted` folder and the row is kept, the archive-not-delete
+  instinct applied to a scan.
+
+**The modals are existing variants.** Upload document and Add pages are [form modals](#3-form) with
+`multipart/form-data`; the type is a floating select with an `<optgroup>` per category and the
+placeholder `-- SELECT DOCUMENT TYPE --`; the pages are a `multiple` [file input](#file-inputs-sit-outside-form-floating)
+with its chosen-file list. Add pages says where the new pages continue from ("continue from **p3**").
+Edit details is a form modal that says, when the type changes, that the files move to that type's
+folder. Remove is a [confirmation](#4-confirmation) naming the document and its page count, saying
+the files go to `_Deleted` where IT can recover them, with the cancel label "Keep the document".
 
 ---
 
