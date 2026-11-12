@@ -1,0 +1,173 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Enrollment Post</title>
+<style>
+  :root {
+    --green: #1A7F37; --green-dark: #135F29; --green-light: #E7F4EA; --green-border: #B7DFC2;
+    --gold: #D9A520; --gold-light: #FFF7E0; --gold-border: #F2D58A;
+    --ink: #14161A; --muted: #5B616B; --line: #E3E5E9; --ground: #F4F5F7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; background: var(--ground); }
+  body { font-family: "Segoe UI", "Segoe UI Variable", Arial, sans-serif; color: var(--ink); }
+  .page { width: 1080px; padding: 0 0 80px; }
+
+  /* Header */
+  .hero { position: relative; background: var(--green); color: #fff; padding: 72px 80px 120px; overflow: hidden; }
+  .hero .ring { position: absolute; border-radius: 50%; border: 2px solid rgba(255,255,255,.12); }
+  .hero .r1 { width: 520px; height: 520px; right: -140px; top: -160px; }
+  .hero .r2 { width: 340px; height: 340px; right: -50px; top: -70px; border-color: rgba(217,165,32,.45); }
+  .school { font-size: 26px; font-weight: 600; letter-spacing: 6px; opacity: .85; }
+  .hero h1 { font-size: 88px; line-height: 1.02; font-weight: 800; margin-top: 28px; letter-spacing: -1px; }
+  .hero h1 span { color: #FFD666; }
+  .term { font-size: 38px; font-weight: 500; margin-top: 26px; opacity: .95; }
+  .hero-icon { position: absolute; right: 86px; top: 236px; }
+
+  /* Schedule card */
+  .schedule { margin: -70px 80px 0; position: relative; background: #fff; border-radius: 28px;
+    padding: 36px 44px; display: flex; align-items: center; gap: 32px; box-shadow: 0 10px 30px rgba(20,22,26,.08); }
+  .schedule .cal { flex: none; width: 104px; height: 104px; border-radius: 24px; background: var(--gold-light);
+    border: 2px solid var(--gold-border); display: flex; align-items: center; justify-content: center; }
+  .schedule .label { font-size: 24px; font-weight: 600; color: var(--muted); letter-spacing: 3px; }
+  .schedule .dates { font-size: 50px; font-weight: 800; margin-top: 2px; }
+
+  .intro { margin: 48px 80px 0; font-size: 30px; color: var(--muted); }
+  .intro b { color: var(--ink); }
+
+  /* Options */
+  .options { margin: 28px 80px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .opt { background: #fff; border-radius: 28px; padding: 36px 34px 34px; border: 2px solid var(--line); }
+  .opt .tag { display: inline-block; font-size: 20px; font-weight: 700; letter-spacing: 3px; color: var(--green);
+    background: var(--green-light); border: 1.5px solid var(--green-border); border-radius: 999px; padding: 6px 16px; }
+  .opt .head { display: flex; align-items: center; gap: 18px; margin-top: 22px; }
+  .opt .ico { flex: none; width: 72px; height: 72px; border-radius: 20px; background: var(--green);
+    display: flex; align-items: center; justify-content: center; }
+  .opt h3 { font-size: 31px; line-height: 1.15; font-weight: 700; }
+  .opt ol { list-style: none; margin-top: 24px; counter-reset: s; }
+  .opt li { counter-increment: s; position: relative; padding-left: 44px; font-size: 25px; line-height: 1.35; margin-top: 14px; color: #2B2F36; }
+  .opt li::before { content: counter(s); position: absolute; left: 0; top: 2px; width: 30px; height: 30px; border-radius: 50%;
+    background: var(--ground); color: var(--muted); font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .nw { white-space: nowrap; }
+  .opt .url { font-size: 23.5px; }
+
+  /* Steps */
+  .section { margin: 52px 80px 0; }
+  .section h2 { font-size: 26px; font-weight: 700; letter-spacing: 5px; color: var(--green); }
+  .steps { list-style: none; margin-top: 22px; background: #fff; border-radius: 28px; padding: 12px 40px; border: 2px solid var(--line); }
+  .steps li { display: flex; align-items: center; gap: 26px; padding: 22px 0; border-top: 1.5px solid var(--line); font-size: 29px; line-height: 1.3; }
+  .steps li:first-child { border-top: 0; }
+  .steps .n { flex: none; width: 52px; height: 52px; border-radius: 50%; background: var(--green); color: #fff;
+    font-size: 25px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .steps b { font-weight: 700; }
+  .steps small { color: var(--muted); font-size: 25px; }
+
+  /* Callouts */
+  .note { margin: 24px 80px 0; border-radius: 28px; padding: 32px 40px; display: flex; gap: 28px; align-items: flex-start; font-size: 28px; line-height: 1.4; }
+  .note .ico { flex: none; width: 64px; height: 64px; border-radius: 18px; display: flex; align-items: center; justify-content: center; }
+  .note.clear { background: var(--gold-light); border: 2px solid var(--gold-border); }
+  .note.clear .ico { background: var(--gold); }
+  .note.mail { background: #fff; border: 2px solid var(--line); color: #2B2F36; }
+  .note.mail .ico { background: var(--green-light); border: 1.5px solid var(--green-border); }
+  .note b { font-weight: 700; color: var(--ink); }
+
+  .footer { margin: 48px 80px 0; background: var(--green); color: #fff; border-radius: 28px; padding: 36px 40px; text-align: center; }
+  .footer .t { font-size: 34px; font-weight: 700; }
+  .footer .t span { color: #FFD666; }
+  .footer .url { font-size: 27px; opacity: .9; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="ring r1"></div><div class="ring r2"></div>
+    <div class="school">GOLDEN SUCCESS COLLEGE</div>
+    <h1>Online Enrollment<br>is <span>now open</span></h1>
+    <div class="term">2nd Semester &nbsp;·&nbsp; S.Y. 2026–2027</div>
+    <svg class="hero-icon" width="150" height="150" viewBox="0 0 24 24" fill="none" stroke="#FFD666" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 9 12 4 2 9l10 5 10-5Z"/><path d="M6 11v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/><path d="M22 9v6"/>
+    </svg>
+  </div>
+
+  <div class="schedule">
+    <div class="cal">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#B07F0C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/>
+      </svg>
+    </div>
+    <div>
+      <div class="label">ENROLLMENT SCHEDULE</div>
+      <div class="dates">November 3 – 30, 2026</div>
+    </div>
+  </div>
+
+  <p class="intro">For <b>continuing College students</b>. Sign in using <b>either</b> way:</p>
+
+  <div class="options">
+    <div class="opt">
+      <span class="tag">OPTION A</span>
+      <div class="head">
+        <div class="ico">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>
+        </div>
+        <h3>Tatak Goldenian App</h3>
+      </div>
+      <ol>
+        <li>Update to the latest version <b>(2.0.0)</b> in the Google Play Store.</li>
+        <li>Open the app and unlock it with your MPIN or fingerprint.</li>
+        <li>Tap your student card. The Student Portal opens, already signed in.</li>
+      </ol>
+    </div>
+    <div class="opt">
+      <span class="tag">OPTION B</span>
+      <div class="head">
+        <div class="ico">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20a15 15 0 0 1 0-20"/></svg>
+        </div>
+        <h3>Web Browser</h3>
+      </div>
+      <ol>
+        <li>Go to<br><b class="nw url">portal.golden-success.com</b></li>
+        <li>Type your student number and tap <b>Sign in</b>.</li>
+        <li>Enter the 6-digit code sent to your school email.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>HOW TO APPLY</h2>
+    <ol class="steps">
+      <li><span class="n">1</span><div>Tap the <b>Enroll</b> tab, then tap <b>Apply</b> for <span class="nw">2nd Semester 2026–2027</span>.</div></li>
+      <li><span class="n">2</span><div>Check your mobile number and email.</div></li>
+      <li><span class="n">3</span><div>Fill in your emergency contact <small>(name, number, address)</small>.</div></li>
+      <li><span class="n">4</span><div>Tick your subjects, including any back subjects listed.</div></li>
+      <li><span class="n">5</span><div>Tap <b>Add up</b> to check your units <small>(max 30, or 36 if graduating)</small>.</div></li>
+      <li><span class="n">6</span><div>Read each policy and turn on its switch.</div></li>
+      <li><span class="n">7</span><div>Tap <b>Submit application</b>.</div></li>
+    </ol>
+  </div>
+
+  <div class="note clear">
+    <div class="ico">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>
+    </div>
+    <div>After you submit, <b>submit your clearance to the registrar</b>. It is one of the requirements for approval.</div>
+  </div>
+
+  <div class="note mail">
+    <div class="ico">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1A7F37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m22 7-10 6L2 7"/></svg>
+    </div>
+    <div>You will get an email from <b>mis@golden-success.com</b> when your application is submitted, and again once the registrar approves, returns or rejects it. Check its status anytime in the <b>Enroll</b> tab.</div>
+  </div>
+
+  <div class="footer">
+    <div class="t">Enroll before <span>November 30, 2026</span></div>
+    <div class="url">portal.golden-success.com</div>
+  </div>
+
+</div>
+</body>
+</html>
