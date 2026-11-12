@@ -570,9 +570,11 @@ system's dialog chose, so the order the server will use is stated under the cont
 ("Pages are numbered in file-name order, so scan2 comes before scan10") and the chosen files are
 listed beneath it, numbered as they will be stored, each with its size, then the count and total.
 A file over the per-file limit, or a total over the request limit, turns red before anything is
-posted — a preview that saves a failed upload of twenty megabytes, never the enforcement. Carbon's
+posted — a preview that saves a failed upload of twenty megabytes, never the enforcement. An
+over-limit file says which limit it passed ("1.5 MB · over the 1 MB page limit"), and choosing more
+files than the input takes ("at most 2 can be uploaded here") turns the total line red. Carbon's
 `wwwroot/js/document-upload.js` draws it for any `input[type=file][data-cc-file-list]`, reading
-`data-max-bytes` and `data-max-total`, and clears it when the modal closes.
+`data-max-bytes`, `data-max-files` and `data-max-total`, and clears it when the modal closes.
 
 ### Number inputs
 
@@ -2430,6 +2432,10 @@ files from. It is the signatory row with the pages added.
 - **The writes go in a ⋯ [dropdown](#dropdowns)** — Edit details, Add pages, Remove — so a row does
   not carry four buttons. Without the permission the ⋯ is drawn in the [unavailable](#unavailable-state)
   state with its reason as the title, like any other withheld action.
+- **The menu offers only what fits the document.** A document of a fixed kind and size — an
+  enrollment application's clearance, two images at most — offers **Remove** alone: its kind is the
+  point, so there are no details to edit, and its card's trailing action replaces it whole rather than
+  adding a page.
 - **No thumbnail.** A phone photo of a page is several megabytes, and a list of thirty would make the
   page that holds it slow for everyone who opens it to read something else. The chips are the control.
 - `flex-wrap` on the row, `min-width` on the title block: on a phone the chips and buttons drop under
@@ -3224,6 +3230,27 @@ with its chosen-file list. Add pages says where the new pages continue from ("co
 Edit details is a form modal that says, when the type changes, that the files move to that type's
 folder. Remove is a [confirmation](#4-confirmation) naming the document and its page count, saying
 the files go to `_Deleted` where IT can recover them, with the cancel label "Keep the document".
+
+### One document of a fixed kind
+
+The same card holding a single document that a screen asks for by name — an enrollment
+application's **Clearance** (Carbon, migration 034), shown on the application under its emails:
+
+- The section label names the kind ("Clearance", `bi-clipboard-check`) and carries no count.
+- The trailing action reads **Upload clearance** (Create tone) while the card is empty and
+  **Replace clearance** (Edit tone) once it holds one. Replacing is one write: the new document is
+  filed, the record points at it, and the old one's row is marked removed with its files moved to
+  `_Deleted`, so there is never a moment with two or none.
+- One [Document row](#document-row) whose ⋯ offers **Remove** only.
+- The empty state names the kind and the remedy ("No clearance uploaded for this application yet.
+  Upload a photo or scan of each side.").
+- The closing sentence states the limits (images only, how many, how large) and where the document
+  is also filed, because it is an ordinary record document that other screens list too.
+- **A list that tracks it gets a column**, not a flag pill: an `UPLOADED` pill (Create tone,
+  `bi-check2`) when it is on file and a muted em dash when it is not. Missing is drawn quietly on
+  purpose — a paper arriving after the application is the ordinary order, not a fault.
+- The upload is the same form modal with `data-max-files` on its input, and it states what is being
+  replaced before it runs.
 
 ---
 
