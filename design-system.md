@@ -35,6 +35,7 @@ Version 1.0 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+
 - [Application bar](#application-bar)
 - [Breadcrumb](#breadcrumb)
 - [Page header](#page-header)
+  - [Identifier strip](#identifier-strip)
 - [Stat cards](#stat-cards)
 - [Stock tiles](#stock-tiles)
 - [Buttons](#buttons)
@@ -65,6 +66,7 @@ Version 1.0 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+
 - [Figure grids](#figure-grids)
 - [Grouped tables](#grouped-tables)
 - [Document list card](#document-list-card)
+- [Information card](#information-card)
 - [Page templates](#page-templates)
 - [Migration guide](#migration-guide)
 
@@ -1001,6 +1003,41 @@ For detail pages showing a specific record, the header carries metadata and a ri
                 border-radius: 0 0 0.375rem 0.375rem;"></div>
 </div>
 ```
+
+### Identifier strip
+
+The keys a record is found by, under the record header's subtitle — Carbon's student page carries
+its student number, LRN and NFC card here. Label above value, the [figure grid](#figure-grids)
+idiom at row size:
+
+```html
+<div class="d-flex flex-wrap column-gap-4 row-gap-2 mt-3">
+    <div>
+        <div class="text-uppercase fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.07em; color: #94a3b8;">
+            <i class="bi bi-hash me-1"></i>Student number
+        </div>
+        <div class="font-monospace fw-semibold"
+             style="font-size: 0.90rem; color: #2563eb; user-select: all;">26-1004255</div>
+    </div>
+    <div>
+        <div class="text-uppercase fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.07em; color: #94a3b8;">
+            <i class="bi bi-credit-card-2-front me-1"></i>NFC card
+        </div>
+        <div style="font-size: 0.85rem; font-style: italic; color: #94a3b8;">Not recorded</div>
+    </div>
+</div>
+```
+
+- **The record's own number takes the semantic colour** ([highlighted identifiers](#highlighted-identifiers));
+  the other keys stay `#1e293b`.
+- **Monospace, with `user-select: all`**, so one click selects a whole key to paste elsewhere — a
+  double-click stops at the hyphen in `26-1004255`.
+- **A missing key says so** in muted italic, never a dash.
+- **Keys only.** A phone number or an email is not how a record is found; it belongs with the address
+  on an [information card](#information-card), where somebody looking for a number to call looks.
+- **The action stack drops beneath the identity on narrow screens:** `col-12 col-lg` beside
+  `col-12 col-lg-auto d-flex flex-wrap flex-lg-column align-items-start align-items-lg-end gap-2`.
+  Below `lg` the buttons wrap as a row instead of squeezing the name to a word a line.
 
 ---
 
@@ -3251,6 +3288,87 @@ application's **Clearance** (Carbon, migration 034), shown on the application un
   purpose — a paper arriving after the application is the ordinary order, not a fault.
 - The upload is the same form modal with `data-max-files` on its input, and it states what is being
   replaced before it runs.
+
+---
+
+## Information card
+
+A record's own facts in titled groups side by side. First built for a student's details in Carbon
+(U03, 20 Nov 2026): Personal, Contact, Emergency contact.
+
+```
+┌ 🪪 STUDENT INFORMATION ────────────────────────────────────────────────────────┐
+│ 👤 PERSONAL              │ 📞 CONTACT               │ 🛟 EMERGENCY CONTACT      │
+│ (🎂) DATE OF BIRTH        │ (📱) CONTACT NUMBER       │ (👤) NAME                  │
+│      4 Mar 2012          │      0917 123 4567       │      SANTOS, MARIA        │
+│ (📍) PLACE OF BIRTH       │ (✉) EMAIL ADDRESS        │ (📞) CONTACT NUMBER        │
+│      Talisay City, Cebu  │      rosa@example.com    │      0917 765 4321        │
+│ (🏳) CITIZENSHIP          │ (🏠) HOME ADDRESS         │ (🏠) ADDRESS               │
+│      Not recorded        │      Brgy. 5, Talisay    │      Same as home address │
+│ A closing sentence: where each fact is changed.                                 │
+└─────────────────────────────────────────────────────────────── gradient bar ──┘
+```
+
+```html
+<div class="row g-4">
+    <div class="col-12 col-md-6 col-xl-4">
+        <!-- group heading: table-header size, one step stronger than the labels -->
+        <div class="d-flex align-items-center gap-2 pb-1 text-uppercase fw-semibold"
+             style="font-size: 0.72rem; letter-spacing: 0.05em; color: #64748b;">
+            <i class="bi bi-telephone" style="font-size: 0.80rem; color: #94a3b8;"></i>Contact
+        </div>
+
+        <!-- a recorded fact: blue bubble, filled glyph, label above value -->
+        <div class="d-flex align-items-start gap-3 py-2" style="border-bottom: 1px solid #f1f5f9;">
+            <span class="rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                  style="width: 34px; height: 34px; background-color: #eff6ff;">
+                <i class="bi bi-phone-fill" style="color: #2563eb; font-size: 0.80rem;"></i>
+            </span>
+            <div class="flex-grow-1" style="min-width: 0;">
+                <div class="text-uppercase fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.07em; color: #94a3b8;">Contact number</div>
+                <a href="tel:09171234567" class="d-inline-block text-decoration-none text-break font-monospace fw-semibold"
+                   style="font-size: 0.90rem; color: #2563eb;">0917 123 4567</a>
+            </div>
+        </div>
+
+        <!-- a missing fact: grey bubble, muted italic; the last row drops its rule -->
+        <div class="d-flex align-items-start gap-3 py-2">
+            <span class="rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                  style="width: 34px; height: 34px; background-color: #f1f5f9;">
+                <i class="bi bi-house-fill" style="color: #94a3b8; font-size: 0.80rem;"></i>
+            </span>
+            <div class="flex-grow-1" style="min-width: 0;">
+                <div class="text-uppercase fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.07em; color: #94a3b8;">Home address</div>
+                <div style="font-size: 0.85rem; font-style: italic; color: #94a3b8;">Not recorded</div>
+            </div>
+        </div>
+    </div>
+    <!-- …the other groups -->
+</div>
+```
+
+- **[Card anatomy](#card-anatomy)** with a [section label](#section-labels) naming the facts ("Student
+  information").
+- **Each fact is the [signatory row](#signatory-row) with the label above the value**, not beside it as
+  in a [detail row](#detail-rows): the values are addresses that wrap, and a right-aligned address
+  three lines deep is hard to read. `align-items-start`, so the bubble stays beside its label when the
+  value wraps. The last row in a group drops its rule.
+- **A group heading is one step stronger than the labels under it** — table-header size, `#64748b`,
+  an outline icon — so the group reads as a group. The bubbles carry filled glyphs.
+- **A recorded fact sits beside the record's colour; a missing one says so** — a grey bubble
+  (`#f1f5f9`, glyph `#94a3b8`, the [avatar](#avatars-and-photos) fallback's pair) and *Not recorded*
+  in muted italic, so a glance down a column shows what is on file. A placeholder the source data
+  held (`N/A`, `-`, `NONE`) reads the same: a dash printed where an address goes looks like a
+  rendering fault.
+- **Link only what a device can act on.** One number a phone can dial is a `tel:` link, monospaced and
+  grouped the way it is read aloud (`0917 123 4567`); an address a mail client can use is a `mailto:`
+  link. Two numbers in one box, or an email that fails the check, are shown as typed and not linked.
+- **A value that repeats another says so:** an emergency address equal to the home address reads
+  *Same as home address*, with the address as its hover.
+- **Columns:** `col-12 col-md-6 col-xl-4` in a `row g-4` — three across from `xl`, two from `md`,
+  stacked on a phone — in the order a registration form asks for them.
+- **A closing sentence** says where each fact is changed, because a read-only card otherwise leaves
+  the reader looking for an edit control.
 
 ---
 
