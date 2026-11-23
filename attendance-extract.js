@@ -2,11 +2,18 @@
 // Returns a JSON string mapping every placeholder in attendance-post-4x5.html to its value.
 (() => {
   const TOP = 3;
+  // Employees left out of the report entirely: every count, ranking and the headcount.
+  // A row matches when every word of a name below appears in its PERSON cell
+  // (case and accents ignored), so "Nuñez Nicanor IV" still matches "Nicanor Nuñez".
+  const EXCLUDE = ['Nicanor Nuñez', 'Mary May Bugnos', 'Dannica Imbong'];
+  const words = s => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().match(/[a-z0-9]+/g) || [];
+  const excluded = name => EXCLUDE.some(x => { const w = words(name); return words(x).every(t => w.includes(t)); });
   const table = document.querySelector('table');
   if (!table) throw new Error('Attendance table not found');
-  const rows = [...table.querySelectorAll('tbody tr')]
+  const allRows = [...table.querySelectorAll('tbody tr')]
     .map(r => [...r.children].map(c => c.innerText.trim().replace(/\s+/g, ' ')))
     .filter(r => r.length >= 10);
+  const rows = allRows.filter(r => !excluded(r[1]));
   // Columns: 0 EMPLOYEE NO., 1 PERSON, 2 STATUS, 3 WORKING DAY OFF, 4 ABSENTS, 5 LEAVE,
   //          6 LATES, 7 UNDERTIME, 8 OVERTIME, 9 INCOMPLETE
   const num = s => parseInt(s, 10) || 0;
@@ -53,5 +60,7 @@
     ABSENT_TOP: ranked(r => num(r[4]), v => `${v} day${v === 1 ? '' : 's'}`),
     LATE_TOP: ranked(r => sec(r[6]), hm),
     UT_TOP: ranked(r => sec(r[7]), hm),
+    // Not a template placeholder: the PERSON names that were left out, to check the match.
+    _EXCLUDED: allRows.filter(r => excluded(r[1])).map(r => r[1]).join(', '),
   });
 })()

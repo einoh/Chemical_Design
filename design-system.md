@@ -1,6 +1,6 @@
 **A front-end reference guide for the Chemical suite of web applications**
 
-Version 1.0 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+
+Version 1.1 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+ · [What changed in 1.1](#changelog)
 
 ---
 
@@ -13,6 +13,7 @@ Version 1.0 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+
 
 **Customize**
 - [Color system](#color-system)
+  - [Activity type identity](#activity-type-identity)
 - [Semantic tokens](#semantic-tokens)
 - [Typography scale](#typography-scale)
 
@@ -30,6 +31,9 @@ Version 1.0 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+
 - [Floating labels](#floating-labels)
 - [Search inputs](#search-inputs)
 - [Form layout](#form-layout)
+- [Filter bar](#filter-bar)
+- [Binary setting switch](#binary-setting-switch)
+- [Upload drop zone](#upload-drop-zone)
 
 **Components**
 - [Application bar](#application-bar)
@@ -53,6 +57,13 @@ Version 1.0 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+
 - [Flash messages](#flash-messages)
 - [Notice cards](#notice-cards)
 - [Dropdowns](#dropdowns)
+- [Course card](#course-card)
+- [Progress bar](#progress-bar)
+- [Course outline](#course-outline)
+- [Media frame](#media-frame)
+- [Quiz answer options](#quiz-answer-options)
+- [Countdown strip](#countdown-strip)
+- [Reorder handle](#reorder-handle)
 
 **Utilities**
 - [Gradient bars](#gradient-bars)
@@ -68,7 +79,9 @@ Version 1.0 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+
 - [Document list card](#document-list-card)
 - [Information card](#information-card)
 - [Page templates](#page-templates)
+  - [Sign-in page](#sign-in-page)
 - [Migration guide](#migration-guide)
+- [Changelog](#changelog)
 
 **Email**
 - [Transactional email](#transactional-email)
@@ -81,6 +94,8 @@ Version 1.0 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+
 ## Introduction
 
 The system is built entirely on **Bootstrap 5.3** with **no custom CSS framework, no build step, and no Sass compilation**. Everything is either a Bootstrap utility class or an inline `style` attribute using hex values documented here. This is a deliberate constraint: the application runs on ASP.NET MVC with Razor views served by IIS, and adding a preprocessor to that pipeline is not worth the cost.
+
+> **Clarified in 1.1.** "No custom CSS framework" does not mean "no stylesheet". Each application carries one small plain-CSS file for what inline styles cannot express: state selectors (`.active`, `:hover`, `:checked`, `.collapsed`), the `[hidden]` rule, the shell and rail, skeleton animation, and the [ruled columns](#ruled-columns--the-one-exception-to-never-table-bordered) rule. Static appearance — colour, size, spacing of a thing that does not change — stays inline. Prefix the classes `cc-` so they are recognisably the system's.
 
 ### What this replaces
 
@@ -166,6 +181,34 @@ Deeper tints for hover states and nested icon bubbles:
 | Cash | `#dbeafe` | `#dbeafe` |
 | Online | `#ede9fe` | `#ede9fe` |
 | Cheque | `#ccfbf1` | `#ccfbf1` |
+
+### Activity type identity
+
+*Added in 1.1, from Litium (LMS).* A learning application has its own identity axis: the kind of activity a row, card or modal is about. Each kind owns one hue, the same way each payment type does, and wears it on its icon, its pill, its icon bubble and the gradient bar of any card or modal given over to it.
+
+| Type | Icon | Surface | Border | Foreground | Gradient |
+|---|---|---|---|---|---|
+| **Video** | `bi-play-btn-fill` | `#fdf4ff` | `#d8b4fe` | `#9333ea` | `#9333ea → #a78bfa` |
+| **PDF** | `bi-file-earmark-pdf-fill` | `#f0fdfa` | `#99f6e4` | `#0f766e` | `#0f766e → #2dd4bf` |
+| **Quiz** | `bi-ui-checks` | `#eef2ff` | `#a5b4fc` | `#4f46e5` | `#4f46e5 → #818cf8` |
+| **Assignment** | `bi-clipboard-check-fill` | `#f0f9ff` | `#7dd3fc` | `#0369a1` | `#0369a1 → #38bdf8` |
+| **Live assessment** | `bi-camera-reels-fill` | `#fffbeb` | `#fcd34d` | `#b45309` | `#b45309 → #fbbf24` |
+
+Hover surface / bubble fill: Video `#ede9fe`, PDF `#ccfbf1`, Quiz `#e0e7ff`, Assignment `#e0f2fe`, Live assessment `#fef3c7`.
+
+```html
+<i class="bi bi-ui-checks" style="font-size: 0.95rem; color: #4f46e5;"></i>
+<span class="badge fw-semibold" style="background-color: #eef2ff; color: #4f46e5; border: 1px solid #a5b4fc;
+      font-size: 0.68rem; border-radius: 20px; padding: 3px 8px;">Quiz</span>
+```
+
+#### Rules
+
+- **The activity hues never stand for an action or a status.** Blue, green, rose, orange and slate keep their meanings (edit, create, destructive, pending, neutral). That is why the hues are indigo, sky and amber rather than the blue, green and orange next to them: an assignment row must not read as "edit", nor a live assessment as "pending".
+- **Purple and teal are shared with Online and Cheque.** The two axes never meet in one application, so the reuse cannot be misread. An application that has both axes picks one of them to own colour and renders the other in slate.
+- **A row about an activity shows its identity once**: the coloured icon, or a pill, not both in the same colour side by side unless the pill carries the label the icon cannot.
+- **Unknown types are slate** (`bi-file-earmark`). A colour that cannot name its meaning is not used.
+- **Actions inside an activity keep action colours.** A *Save score* button on a live assessment modal is green, not amber; only the bubble and the bar are amber.
 
 ### Action colors
 
@@ -758,6 +801,114 @@ if ($('#particularsTable tbody tr').length === 0) {
 ```
 
 Messages are full sentences, name the field, and end with a period.
+
+---
+
+## Filter bar
+
+*Added in 1.1, from Litium.* A list a reader narrows by more than a search — a catalog by category and level, users by role and status — gets one card above it holding the search box and the selects in a single row, applied by a `GET` so the filtered page has an address. It is a [search input](#search-inputs) with company, not a new control.
+
+```html
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body px-4 py-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-12 col-lg-4">
+                <div style="position: relative; width: 100%;">
+                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); z-index: 1; pointer-events: none;">
+                        <i class="bi bi-search" style="font-size: 0.80rem; color: #94a3b8;"></i>
+                    </span>
+                    <input type="text" name="search" class="form-control" placeholder="Search courses..." aria-label="Search courses"
+                           style="border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.82rem; box-shadow: none; padding-left: 34px; height: 38px;">
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <select name="categoryId" class="form-select" aria-label="Category"
+                        style="border: 1.5px solid #e2e8f0; border-radius: 8px; box-shadow: none; height: 38px; font-size: 0.82rem;">
+                    <option value="">All categories</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-12 col-lg d-flex align-items-center gap-2 justify-content-lg-end">
+                <button type="submit" class="btn ... cc-btn-edit" style="... height: 38px;"><i class="bi bi-funnel-fill"></i> Filter</button>
+                <a href="?" class="btn ... cc-btn-neutral" style="... height: 38px;"><i class="bi bi-x-circle"></i> Clear</a>
+            </div>
+        </form>
+    </div>
+    <div style="height: 3px; background: linear-gradient(90deg, #94a3b8, #e2e8f0); border-radius: 0 0 0.375rem 0.375rem;"></div>
+</div>
+```
+
+| Part | Spec |
+|---|---|
+| Height | Every control `38px`, so the row is one line at `lg` |
+| Labels | None visible: the select's first option names the filter (*All categories*), and `aria-label` names it for a screen reader |
+| Bar | Slate — the card holds no record and takes no action of its own |
+| Clear | Shown only while a filter is applied; it is a link to the unfiltered address |
+
+### Rules
+
+- **Not floating labels.** A filter bar is a toolbar, not a form a reader fills in; floating labels would double its height.
+- **The empty result names its remedy.** *No courses match these filters. Clear them to see every course.* — not the empty state of an empty collection.
+- **Paging keeps the filter.** Every Previous / Next link carries the same query values.
+- **One select may submit on change** when it is the only filter (choosing the course on an enrollments page). With two or more, the reader sets them and then presses Filter.
+
+---
+
+## Binary setting switch
+
+*Added in 1.1, from Litium.* A yes/no setting that changes what else the form asks — *Paid course* reveals a price, *Accept late submissions* reveals a penalty — is a `form-switch`, recoloured so that *on* is the create green and *off* is slate. A checkbox remains right for a tick in a list; the switch is for a setting.
+
+```html
+<div class="form-check form-switch cc-switch d-flex align-items-center gap-2 ps-0 mb-2">
+    <input class="form-check-input ms-0 mt-0" type="checkbox" role="switch" id="allowLate" name="AllowLateSubmission" value="true"
+           data-cc-reveals="#latePenalty">
+    <label class="form-check-label" for="allowLate" style="font-size: 0.85rem; color: #1e293b;">Accept late submissions</label>
+</div>
+<div id="latePenalty" class="form-floating mb-2" style="max-width: 220px;" hidden>...</div>
+```
+
+```css
+/* In the stylesheet: Bootstrap paints the switch from :checked, which inline styles cannot reach. */
+.cc-switch .form-check-input { width: 2.4em; height: 1.3em; border: 1.5px solid #cbd5e1; background-color: #f1f5f9; }
+.cc-switch .form-check-input:checked { background-color: #16a34a; border-color: #16a34a; }
+.cc-switch .form-check-input:focus { box-shadow: 0 0 0 0.2rem rgba(22, 163, 74, 0.15); border-color: #86efac; }
+```
+
+### Rules
+
+- **The label says what *on* means**, as a statement: *Accept late submissions*, not *Late submissions?*.
+- **What it reveals sits directly under it** and is `hidden` (not removed) while off, so a posted form still binds; the reveal is wired by `data-cc-reveals="#target"`, or `data-cc-reveals-when="unchecked"` when *on* hides the target (*Everyone on the platform* hides the course field).
+- **A switch is not an action.** Flipping it saves nothing; the form's button does.
+
+---
+
+## Upload drop zone
+
+*Added in 1.1, from Litium.* A form whose point is one large file — a lecture video, a PDF — gives the file the room it deserves: a dashed slate box that is a `<label>` for the real input, turns blue while a file is dragged over it, and then names the chosen file. For a form where the file is one field among many, the plain [file input](#file-inputs-sit-outside-form-floating) remains right.
+
+```html
+<label class="form-label" for="videoFile" style="...form label..."><i class="bi bi-camera-video-fill"></i> Video file</label>
+<label for="videoFile" class="cc-dropzone d-block text-center px-3 py-4 mb-1" data-cc-dropzone="#videoFile">
+    <i class="bi bi-cloud-arrow-up-fill d-block mb-2" style="font-size: 1.6rem; color: #94a3b8;"></i>
+    <span class="cc-dropzone-empty d-block" style="font-size: 0.85rem; color: #475569;">
+        Drag a file here, or <span style="color: #2563eb; font-weight: 600;">browse</span>
+    </span>
+    <span class="cc-dropzone-chosen fw-semibold text-break" style="font-size: 0.85rem; color: #1e293b;" hidden></span>
+    <span class="d-block mt-1" style="font-size: 0.72rem; color: #94a3b8;">MP4 or WebM, up to 2 GB</span>
+</label>
+<input type="file" id="videoFile" name="VideoFile" accept="video/mp4,video/webm" class="visually-hidden" data-max-bytes="2147483648" required>
+```
+
+```css
+.cc-dropzone { background-color: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 8px; cursor: pointer; transition: all 0.15s ease; }
+.cc-dropzone:hover, .cc-dropzone.cc-dragover { background-color: #eff6ff; border-color: #93c5fd; }
+```
+
+### Rules
+
+- **The input stays in the form**, `visually-hidden` rather than `display: none`, so the browser posts it, validates `required`, and keyboard focus still reaches it through the label.
+- **The hint states the accepted types and the limit** before anyone tries. Over the limit, the chosen name turns rose (`#e11d48`) with the size — a preview only; the server enforces.
+- **Uploading is an in-flight state.** The submit button turns to *Uploading...* (see [In-flight state](#in-flight-state)) and is restored by `RestoreButtons()` if the page comes back.
+- **One file per zone.** A drop of several takes the first; a form that needs several files uses the plain file input with its file list.
 
 ---
 
@@ -2828,6 +2979,259 @@ Menus are always `border-0 shadow-sm` with `border-radius: 8px`. Items carry a c
 
 ---
 
+## Course card
+
+*Added in 1.1, from Litium.* A catalog or a learner's list of courses is a grid of cards, each one link. It is the one card in the system with an image: a fixed **16:9** thumbnail on top, clipped by its wrapper, then pills, the title, a caption and — for a learner — a progress bar and a call to action.
+
+```html
+<div class="col-12 col-sm-6 col-xl-4">
+    <a href="/Course/Learn/..." class="card border-0 shadow-sm h-100 text-decoration-none cc-hover-card">
+        <div class="position-relative" style="aspect-ratio: 16 / 9; overflow: hidden; border-radius: 0.375rem 0.375rem 0 0; background-color: #f8fafc;">
+            <img src="/thumbs/course.jpg" alt="" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">
+            <span class="position-absolute top-0 end-0 m-2"><!-- Completed / Archived pill --></span>
+        </div>
+        <div class="card-body px-3 py-3 d-flex flex-column">
+            <div class="d-flex flex-wrap gap-1 mb-2"><!-- category pill, level pill --></div>
+            <p class="fw-bold mb-1" style="font-size: 0.92rem; color: #1e293b; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Organic Chemistry I</p>
+            <p class="mb-1 text-truncate" style="font-size: 0.75rem; color: #94a3b8;">by Dr. Reyes</p>
+            <div class="mt-auto pt-2">
+                <!-- progress bar + percentage -->
+                <p class="mb-0 mt-2 d-flex align-items-center gap-1 fw-semibold" style="font-size: 0.78rem; color: #2563eb;">
+                    Continue learning <i class="bi bi-arrow-right" style="font-size: 0.75rem;"></i>
+                </p>
+            </div>
+        </div>
+        <div style="height: 3px; background: linear-gradient(90deg, #2563eb, #60a5fa); border-radius: 0 0 0.375rem 0.375rem;"></div>
+    </a>
+</div>
+```
+
+| State | Bar, bubble and call to action |
+|---|---|
+| In progress / not started | Blue — *Continue learning* / *Start learning* |
+| Completed | Green, with a *Completed* pill on the thumbnail — *Review course* |
+| Archived | Slate, with an *Archived* pill |
+
+### Rules
+
+- **The thumbnail frame is fixed**; the image fills it with `object-fit: cover`. A course without one shows the same frame with a 48px identity bubble (`bi-journal-text`) centred in it, so a row of cards keeps one baseline.
+- **Clip on the wrapper**, not the image: the top corners are rounded by the frame's `overflow: hidden`.
+- **The title clamps at two lines**, the caption at one. Cards in a row are `h-100` and push the progress to the bottom with `mt-auto`.
+- **The whole card is the link**, so nothing inside it is a button. A card that also needs actions (edit, archive) is a [record header](#record-header-with-actions) on the course's own page, not buttons on the card.
+- **The hover lifts the shadow** (`.cc-hover-card:hover`, in the stylesheet) — the cue that the card is one target.
+
+---
+
+## Progress bar
+
+*Added in 1.1, from Litium.* How far a learner is through something — a course, a module, a video — is a thin bar: slate track, a fill in the gradient of what it measures, the figure beside it in text.
+
+```html
+<div class="d-flex align-items-center gap-2">
+    <div class="flex-grow-1">
+        <div class="w-100" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="62"
+             style="height: 6px; background-color: #f1f5f9; border-radius: 20px; overflow: hidden;">
+            <div style="height: 100%; width: 62%; background: linear-gradient(90deg, #2563eb, #60a5fa); border-radius: 20px;"></div>
+        </div>
+    </div>
+    <span class="font-monospace" style="font-size: 0.75rem; color: #475569;">62%</span>
+</div>
+```
+
+| Part | Spec |
+|---|---|
+| Height | `5px` in a table row, `6px` on a card, `10px` as a card's headline figure |
+| Track | `#f1f5f9`, radius `20px` |
+| Fill | Blue while under 100%; green at 100%. A bar about one activity takes its [activity hue](#activity-type-identity) (purple for *watched*) |
+| Figure | Always in text beside or above it; the bar alone is never the only statement of the number |
+
+### Rules
+
+- **Not Bootstrap's `.progress`.** Its striped and animated variants and its solid contextual fills are exactly the loudness the system removes.
+- **Clamp to 0–100** before rendering; an over-count must not draw past the track.
+- **Not for scores.** A grade is a figure and a pass/fail pill; a bar implies "more is still to come".
+
+---
+
+## Course outline
+
+*Added in 1.1, from Litium.* A course's content, Module → Section → Activity, is a stack of collapsible module cards. The module header is the toggle; inside, sections are uppercase labels and activities are rows with a completion circle, the activity's coloured icon, the title and its pills.
+
+```html
+<div class="card border-0 shadow-sm mb-3">
+    <button type="button" class="cc-outline-toggle btn text-start w-100 border-0 px-4 py-3 d-flex align-items-center gap-3"
+            data-bs-toggle="collapse" data-bs-target="#module-1" aria-expanded="true" aria-controls="module-1">
+        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 34px; height: 34px; background-color: #eff6ff;">
+            <span class="fw-bold" style="font-size: 0.80rem; color: #2563eb;">1</span>
+        </div>
+        <div class="flex-grow-1" style="min-width: 0;">
+            <p class="mb-0 fw-semibold text-truncate" style="font-size: 0.92rem; color: #1e293b;">Atomic structure</p>
+            <p class="mb-0" style="font-size: 0.72rem; color: #94a3b8;">3 of 7 done</p>
+        </div>
+        <i class="bi bi-chevron-down" style="color: #94a3b8;"></i>
+    </button>
+    <div class="collapse show" id="module-1">
+        <div class="px-4 pb-3">
+            <p class="text-uppercase fw-semibold mb-1 mt-2" style="font-size: 0.70rem; letter-spacing: 0.08em; color: #94a3b8;">Electrons</p>
+            <a href="..." class="cc-outline-row d-flex align-items-center gap-3 px-2 py-2 rounded text-decoration-none" style="border-bottom: 1px solid #f1f5f9;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 28px; height: 28px; background-color: #16a34a;">
+                    <i class="bi bi-check-lg" style="font-size: 0.80rem; color: #fff;"></i>
+                </div>
+                <i class="bi bi-play-btn-fill flex-shrink-0" style="font-size: 0.95rem; color: #9333ea;"></i>
+                <div class="flex-grow-1" style="min-width: 0;">
+                    <p class="mb-0 fw-semibold text-truncate" style="font-size: 0.85rem; color: #1e293b;">Orbitals explained</p>
+                </div>
+                <i class="bi bi-chevron-right" style="color: #cbd5e1;"></i>
+            </a>
+        </div>
+    </div>
+    <div style="height: 3px; background: linear-gradient(90deg, #2563eb, #60a5fa); border-radius: 0 0 0.375rem 0.375rem;"></div>
+</div>
+```
+
+| Part | Spec |
+|---|---|
+| Module bubble | 34px; the module's number in blue, or a green check on `#f0fdf4` when every activity in it is done |
+| Completion circle | 28px; solid `#16a34a` with a white check when done, a `2px #cbd5e1` ring when not |
+| Activity icon | The [activity identity](#activity-type-identity) icon in its foreground |
+| Bar | Blue; green when the whole module is done |
+| Chevron | Rotates `-90deg` when the module is collapsed — from the stylesheet, since `.collapsed` is toggled by Bootstrap |
+
+### Rules
+
+- **A locked activity is not a link.** It renders as the same row in a `div`: the completion circle becomes a dashed slate circle (`#f1f5f9`, `1.5px dashed #cbd5e1`) holding `bi-lock-fill`, the activity icon and title turn `#cbd5e1` / `#94a3b8`, the type shows as a neutral pill, and a `title` says what unlocks it (*Finish the activities above to unlock this one.*) — shown, not a dead click ([principle 3](#principles)).
+- **The row the learner is on** (in the player's side outline) takes the edit tint — `#eff6ff` with a `1.5px #93c5fd` border, from a `<style>` block — and `aria-current="page"`; nothing else in the outline is coloured by position.
+- **Empty levels say so in one muted italic line** (*No activities in this section*) — a nested dashed box per empty section would outweigh the content.
+- **The same outline serves the grader**: the gradebook's per-student view uses the module cards and activity rows, with earned/possible points and a *Score* button in place of the chevron.
+
+---
+
+## Media frame
+
+*Added in 1.1, from Litium.* A video or a PDF a learner works through sits in a card of its own: the medium on a dark stage (`#0f172a`) inset by `p-2`, a hairline, then the completion row — what has been done and the action that completes it.
+
+```html
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body p-2">
+        <div style="background-color: #0f172a; border-radius: 6px; overflow: hidden;">
+            <video class="w-100 d-block" controls preload="auto" style="max-height: 70vh; background-color: #0f172a;">...</video>
+        </div>
+    </div>
+    <hr class="mx-3 my-0" style="border-color: #f1f5f9; opacity: 1;">
+    <div class="px-4 py-3">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="flex-grow-1" style="min-width: 200px;">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-uppercase fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.07em; color: #94a3b8;">Watched</span>
+                    <span style="font-size: 0.75rem; color: #64748b;">62% watched</span>
+                </div>
+                <!-- progress bar, purple fill -->
+            </div>
+            <button type="button" class="btn ... cc-btn-neutral" hidden><i class="bi bi-check-circle"></i> Mark as Completed</button>
+        </div>
+    </div>
+    <div style="height: 3px; background: linear-gradient(90deg, #9333ea, #a78bfa); border-radius: 0 0 0.375rem 0.375rem;"></div>
+</div>
+```
+
+### Rules
+
+- **The stage is the one dark surface in the system**, because video and rendered pages read best against it. Nothing else — no toolbar, no caption — goes on the dark.
+- **A PDF frame adds a toolbar row above the stage** on white: Previous / Next as neutral icon-only buttons with *Page 3 of 12* in monospace between them, and full screen on the right. The page renders to a canvas inside the stage; a page that fails to load shows a [notice card](#notice-cards) in its place.
+- **Completion appears when it is earned.** The *Mark as Completed* button is `hidden` until the watched or read threshold is met; once the activity is complete it stays in place, disabled, reading *Completed* with a filled check.
+- **The completion row counts in the medium's own unit**: *62% watched*, *4 of 12 pages read*.
+- **The bar is the activity's hue** (purple for video, teal for PDF).
+
+---
+
+## Quiz answer options
+
+*Added in 1.1, from Litium.* An answer is a whole row the learner can click: a `<label>` wrapping the radio or checkbox and the text. Checked, the row takes the quiz tone (indigo). It is a [selection list](#selection-lists) tick row made large enough to aim at.
+
+```html
+<div class="d-flex flex-column gap-2">
+    <label class="cc-option">
+        <input type="radio" name="Questions[0].SelectedOptionId" value="a1">
+        <span>Two electrons</span>
+    </label>
+    <label class="cc-option">
+        <input type="radio" name="Questions[0].SelectedOptionId" value="a2">
+        <span>Eight electrons</span>
+    </label>
+</div>
+```
+
+```css
+.cc-option { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 0.9rem; cursor: pointer;
+             background-color: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; color: #1e293b; }
+.cc-option:hover { border-color: #a5b4fc; background-color: #f8fafc; }
+.cc-option:has(input:checked) { border-color: #a5b4fc; background-color: #eef2ff; color: #3730a3; }
+.cc-option input { accent-color: #4f46e5; width: 1.05rem; height: 1.05rem; flex-shrink: 0; }
+```
+
+### Rules
+
+- **The control says how many to pick**: a single-answer question uses radios, a multiple-answer one checkboxes; the two must never be mixed within one question.
+- **One question per card while answering**, with step dots and Previous / Next; the submit button appears on the last question and goes through the confirmation modal (create tone — *Submit your answers? You cannot change them after submitting.*).
+- **On the result page the same rows are read-only**: the correct option in the create tone with `bi-check-circle-fill`, a wrong chosen option in the destructive tone with `bi-x-circle-fill`, the rest plain.
+- **Styled from the stylesheet**, because the checked look is driven by `:checked`, which inline styles cannot express.
+
+---
+
+## Countdown strip
+
+*Added in 1.1, from Litium.* Something with a deadline in minutes — a timed quiz, a two-factor code — shows the time left as a pill-shaped strip, in monospace, that changes tone as time runs out. While answering a quiz it lives in a card pinned to the top of the page column (`position: sticky; top: 0`).
+
+```html
+<div id="quizCountdown" class="d-flex align-items-center gap-2 px-3 rounded" aria-live="polite"
+     data-expires="2026-11-23T10:30:00+08:00"
+     style="height: 34px; background-color: #eef2ff; border: 1.5px solid #a5b4fc; color: #4f46e5;">
+    <i class="bi bi-stopwatch-fill" style="font-size: 0.95rem;"></i>
+    <span class="font-monospace fw-bold" style="font-size: 0.92rem;">24:51</span>
+</div>
+```
+
+| Time left | Timed quiz | Sign-in code |
+|---|---|---|
+| Plenty | Indigo (the quiz tone) | Slate (`#f8fafc` / `#e2e8f0` / `#64748b`) |
+| Running low | Pending — `#fff7ed` / `#fed7aa` / `#c2410c` — at 5 minutes | Pending at 1 minute |
+| Last minute / expired | Destructive — `#fff1f2` / `#fda4af` / `#e11d48` — at 1 minute | Destructive at zero, reading *This code has expired* |
+
+### Rules
+
+- **A quiz's deadline comes from the server** (`data-expires`, an ISO time) and the script counts down to it, so a reload or a slow tab cannot add time.
+- **At zero the action happens**: a quiz auto-submits, bypassing the confirmation (the learner can no longer change anything); a code's form refuses to submit and a *Send a new code* link appears.
+- **`aria-live="polite"`** on the strip, and the script updates the text once a second — not a character at a time.
+
+---
+
+## Reorder handle
+
+*Added in 1.1, from Litium.* Rows a builder puts in order — modules, sections, activities, quiz questions — carry a grip at their left edge. Dragging the grip (not the row) moves the row; the gap it leaves is a faint blue placeholder; dropping posts the new order.
+
+```html
+<div class="d-flex align-items-center gap-2 py-2" data-id="m-1" style="border-bottom: 1px solid #f1f5f9;">
+    <i class="bi bi-grip-vertical cc-grip" title="Drag to reorder" aria-hidden="true" style="font-size: 1rem;"></i>
+    <span class="fw-semibold" style="font-size: 0.88rem; color: #1e293b;">Atomic structure</span>
+    <!-- trailing icon-only edit / delete -->
+</div>
+```
+
+```css
+.cc-grip { cursor: grab; color: #cbd5e1; touch-action: none; }
+.cc-grip:hover { color: #64748b; }
+.cc-sort-ghost { opacity: 0.4; background-color: #eff6ff !important; }
+```
+
+### Rules
+
+- **Only the grip starts a drag** (`handle: '.cc-grip'`), so text in the row can still be selected and its buttons clicked.
+- **The order is saved by a normal form post** of the ids in their new order, with the anti-forgery token, and a flash message confirms it. No optimistic save without a round trip.
+- **`touch-action: none` on the grip** so a phone drags the row instead of scrolling the page.
+- **Open item:** dragging is pointer-only. A keyboard path (*Move up* / *Move down* in the row) is still to be designed; until then, an application that must be fully keyboard-operable does not rely on this handle alone.
+
+---
+
 # Utilities
 
 ## Gradient bars
@@ -3462,6 +3866,50 @@ The selection itself is made on a **Dashboard** — a page of selectable rows, o
 
 Picking a scope lands on its **first page** (the one at the top of the side nav), never on an empty landing page inside the scope. A scope with a single area drops the group labels shown above and lists its destinations straight under the header.
 
+### Sign-in page
+
+*Added in 1.1, from Litium.* The pages a person sees before they are signed in — sign-in, the two-factor code — have no application bar and no side nav. They are one centred column, `440px` wide, on the page background: the application's identity (a 48px bubble, the name, an uppercase caption), one card holding the form, and a muted footer line.
+
+```
+            ┌──── max-width 440px ────┐
+            │        (bubble)         │
+            │    Application name     │
+            │   LEARNING PLATFORM     │
+            │ ┌─────────────────────┐ │
+            │ │ Welcome back        │ │
+            │ │ Sign in to continue │ │
+            │ │ [Username        ]  │ │
+            │ │ [Password     (o) ] │ │
+            │ │ [ Sign in         ] │ │
+            │ └──────── bar ────────┘ │
+            │   © 2026 Organisation   │
+            └─────────────────────────┘
+```
+
+```html
+<!-- The two-factor code: six one-digit boxes, joined into one hidden field on submit. -->
+<input type="hidden" name="Code" id="otpCode">
+<div class="d-flex align-items-center justify-content-center gap-2 mb-3">
+    <input data-otp-idx="0" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*"
+           autocomplete="one-time-code" aria-label="Digit 1 of 6" class="cc-otp" autofocus>
+    <!-- … digits 2 to 6, autocomplete="off" -->
+</div>
+```
+
+```css
+.cc-otp { width: 2.75rem; height: 3.1rem; text-align: center; font-size: 1.25rem; font-weight: 700; color: #1e293b;
+          border: 1.5px solid #e2e8f0; border-radius: 8px; }
+.cc-otp:focus { border-color: #93c5fd; box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.12); outline: none; }
+```
+
+#### Rules
+
+- **The form uses floating labels** like every other form; the password field carries an icon-only reveal button (`bi-eye` / `bi-eye-slash`) inside its right edge.
+- **A failed sign-in is said inside the card**, above the fields, as a small rose box (`#fff1f2` / `1px #fda4af`, text `#be123c`) — there is no page column for a [flash message](#flash-messages) to sit in. It never says which of the two fields was wrong.
+- **The code boxes accept a paste of all six digits**, move forward on each digit and back on Backspace, and submit nothing until all six are filled. Under them, a [countdown strip](#countdown-strip) shows how long the code is valid.
+- **The primary action is full width** ([Full-width primary action](#full-width-primary-action)) and goes into the in-flight state (*Signing in...*, *Verifying...*).
+- **Sign-out is a `POST`** with the anti-forgery token, from the application bar's user menu — never a link, which a prefetch or a crawler could follow.
+
 ---
 
 ## Migration guide
@@ -3553,7 +4001,7 @@ Style every `<th>` and add `border-bottom` to every `<tr>`.
 
 ### 7. Modals
 
-Replace `modal-header` / `modal-body` / `modal-footer` defaults with one of the four variants. Add `modal-dialog-centered`, `border-0 shadow`, and a gradient bar.
+Replace `modal-header` / `modal-body` / `modal-footer` defaults with one of the six variants (see [Modals](#modals)). Add `modal-dialog-centered`, `border-0 shadow`, and a gradient bar.
 
 ### 8. Tabs
 
@@ -3827,6 +4275,12 @@ Before shipping a view, confirm:
 - [ ] A side nav with one area lists its pages directly — no group label, no parent item — and picking the scope opens the first of them
 - [ ] A side nav in an application shell is an `offcanvas-md` drawer below `md`, opened from the bar, with its white on an inner element
 - [ ] At 375px nothing scrolls sideways — neither the document nor a scrolling page column — and the application bar stays one line with a long name
+- [ ] Every activity icon, pill and activity-owned bar uses its [activity hue](#activity-type-identity), and no action or status uses one
+- [ ] Every progress figure is in text beside its bar; no Bootstrap `.progress`
+- [ ] Every locked or unavailable outline row is a non-link row with a lock and a `title` saying what unlocks it
+- [ ] Every countdown counts to a server-given deadline and acts at zero
+- [ ] Every drag-to-reorder starts only from a `.cc-grip` and saves by a form post
+- [ ] Sign-out is a `POST` with the anti-forgery token
 
 ---
 
@@ -3845,6 +4299,21 @@ The system is not a rejection of Bootstrap — it is a constraint on which parts
 | Shadow | `shadow-sm`, `shadow` | — |
 | Components | `card`, `modal`, `nav`, `dropdown`, `table`, `form-floating`, `form-control`, `form-select`, `badge`, `breadcrumb`, `collapse`, `offcanvas-md` (an application shell's side nav only) | `alert`, `list-group`, `input-group`, `nav-tabs`, `btn-*` variants |
 | JS | `data-bs-toggle`, `data-bs-target`, `data-bs-dismiss`, `data-bs-backdrop` | — |
+
+---
+
+## Changelog
+
+### 1.1 — November 2026
+
+Added from Litium (the LMS), the first application in the suite that teaches rather than transacts. Every addition is built from existing tokens; no new neutral, no new action colour.
+
+- **New identity axis:** [Activity type identity](#activity-type-identity) — Video purple, PDF teal, Quiz indigo, Assignment sky, Live assessment amber.
+- **Forms:** [Filter bar](#filter-bar), [Binary setting switch](#binary-setting-switch), [Upload drop zone](#upload-drop-zone).
+- **Components:** [Course card](#course-card), [Progress bar](#progress-bar), [Course outline](#course-outline), [Media frame](#media-frame), [Quiz answer options](#quiz-answer-options), [Countdown strip](#countdown-strip), [Reorder handle](#reorder-handle).
+- **Page templates:** [Sign-in page](#sign-in-page).
+- **Clarifications:** the migration guide said *four* modal variants; there are six, as [Modals](#modals) states. The introduction's "no custom CSS framework" now says plainly that a small `cc-` state stylesheet is expected (see [Introduction](#introduction)).
+- **Checklist:** six items for the new components.
 
 ---
 
