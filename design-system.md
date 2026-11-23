@@ -64,6 +64,8 @@ Version 1.1 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+ · [What changed 
 - [Quiz answer options](#quiz-answer-options)
 - [Countdown strip](#countdown-strip)
 - [Reorder handle](#reorder-handle)
+- [Schedule row](#schedule-row)
+- [Week plan](#week-plan)
 
 **Utilities**
 - [Gradient bars](#gradient-bars)
@@ -3232,6 +3234,60 @@ Menus are always `border-0 shadow-sm` with `border-radius: 8px`. Items carry a c
 
 ---
 
+## Schedule row
+
+*Added in 1.1, from Litium (learning plans).* When something opens for a person on a date and may be due later, such as a course section in a student's learning plan, its state is told with one pill beside its title. The same pill appears wherever the item is listed: the course outline, the player's side outline, the learning plan and the staff editor.
+
+| State | Pill | Tone |
+|---|---|---|
+| Not scheduled | `bi-calendar-x` *Not scheduled yet* | Slate, **dashed** border: the unavailable treatment |
+| Upcoming | `bi-calendar-event` *Opens Mon 30 Nov* | Neutral pill |
+| Open, due later | `bi-calendar-check` *Due Fri 5 Dec* | Neutral pill |
+| Open, due within 2 days | `bi-hourglass-split` *Due Fri 5 Dec* | Pending |
+| Past due (still open) | `bi-exclamation-circle-fill` *Past due · Fri 5 Dec* | Destructive |
+| Open, no due date | none | — |
+
+```html
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2 mb-1">
+    <p class="text-uppercase fw-semibold mb-0" style="font-size: 0.70rem; letter-spacing: 0.08em; color: #94a3b8;">Topic 2</p>
+    <span class="badge rounded-pill" style="background-color: #f1f5f9; color: #475569; font-size: 0.68rem; font-weight: 600;">
+        <i class="bi bi-calendar-event me-1"></i>Opens Mon 30 Nov, 08:00
+    </span>
+</div>
+```
+
+**Staff edit** a schedule as a table with a row per section. Columns are the section, the opening date, the due date, the status pill and "done" (`5/6` in monospace, green when complete). Dates use `datetime-local` inputs `34px` high, inside `table-responsive`. The card has one Save button. A form modal applies pacing: a start date, then one every N days or weeks, an optional due-after, and a switch for "Replace dates already set".
+
+### Rules
+
+- **Dates are written out**, day before month: `Mon 30 Nov`. The time is added only when it is not midnight or end of day (`Mon 30 Nov, 08:00`). Due dates fall at 23:59, the end of the day, so a due date never shows a time.
+- **A row that is not open yet is not a link.** It is a locked row (see [Course outline](#course-outline)) with `bi-calendar-event` in place of the padlock and a `title` saying when it opens. A row done before the dates changed stays a link.
+- **Opening an item early shows a notice card**, not the content: a 56px slate calendar bubble, *Opens Mon 30 Nov*, the full date in a sentence, and two ways onward. The server refuses the work too, with a 422 and the same sentence. The view is never the only lock.
+- **Nothing silently stays closed.** Wherever staff see the people concerned (the enrollment list, the gradebook, the content builder's sections), an item lacking a date carries an orange *Needs schedule · N* pill that links to where it is fixed.
+
+---
+
+## Week plan
+
+*Added in 1.1, from Litium.* The page that answers "what do I work on now?" across everything a person is enrolled in. It has three cards, top to bottom, in the order they should be acted on:
+
+| Card | Holds | Bar |
+|---|---|---|
+| **Past due** (only when there is any) | Open items past their due date and not finished | Destructive |
+| **Open now** | Open, unfinished items, nearest due date first | Edit (blue) |
+| **Coming up** | Upcoming items, grouped under *Later this week*, *Next week*, *Week of Mon 7 Dec* | Neutral |
+
+Each row shows the course as a neutral pill, the item's title, its module as a caption, a `5px` progress bar with `3/6`, and its schedule pill. Open rows are links into the course; upcoming rows are not. A muted line under the cards counts finished items, and a helper line in *Coming up* counts items not scheduled yet.
+
+### Rules
+
+- **Finished work leaves the page.** An item whose activities are all done is counted, not listed, even if it was late.
+- **Group by the week it opens**, with weeks starting on Monday. Never list a flat run of dates.
+- **An empty card says what comes next** (*Nothing open right now. Your next section is listed below.*), never just "No items".
+- **Staff never see this page** for a person. They get the editable schedule rows instead (see [Schedule row](#schedule-row)).
+
+---
+
 # Utilities
 
 ## Gradient bars
@@ -4310,7 +4366,7 @@ Added from Litium (the LMS), the first application in the suite that teaches rat
 
 - **New identity axis:** [Activity type identity](#activity-type-identity) — Video purple, PDF teal, Quiz indigo, Assignment sky, Live assessment amber.
 - **Forms:** [Filter bar](#filter-bar), [Binary setting switch](#binary-setting-switch), [Upload drop zone](#upload-drop-zone).
-- **Components:** [Course card](#course-card), [Progress bar](#progress-bar), [Course outline](#course-outline), [Media frame](#media-frame), [Quiz answer options](#quiz-answer-options), [Countdown strip](#countdown-strip), [Reorder handle](#reorder-handle).
+- **Components:** [Course card](#course-card), [Progress bar](#progress-bar), [Course outline](#course-outline), [Media frame](#media-frame), [Quiz answer options](#quiz-answer-options), [Countdown strip](#countdown-strip), [Reorder handle](#reorder-handle), [Schedule row](#schedule-row), [Week plan](#week-plan).
 - **Page templates:** [Sign-in page](#sign-in-page).
 - **Clarifications:** the migration guide said *four* modal variants; there are six, as [Modals](#modals) states. The introduction's "no custom CSS framework" now says plainly that a small `cc-` state stylesheet is expected (see [Introduction](#introduction)).
 - **Checklist:** six items for the new components.
