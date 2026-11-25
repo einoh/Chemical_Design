@@ -1,6 +1,6 @@
 **A front-end reference guide for the Chemical suite of web applications**
 
-Version 1.1 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+ · [What changed in 1.1](#changelog)
+Version 1.2 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+ · [What changed in 1.2](#changelog) · [Living HTML reference](design-system.html)
 
 ---
 
@@ -8,14 +8,17 @@ Version 1.1 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+ · [What changed 
 
 **Getting started**
 - [Introduction](#introduction)
+- [The system stylesheet](#the-system-stylesheet)
 - [Contents](#contents)
 - [Principles](#principles)
 
 **Customize**
+- [Canvas and surfaces](#canvas-and-surfaces)
 - [Color system](#color-system)
   - [Activity type identity](#activity-type-identity)
 - [Semantic tokens](#semantic-tokens)
 - [Typography scale](#typography-scale)
+  - [Tabular numerals](#tabular-numerals)
 
 **Layout**
 - [Grid conventions](#grid-conventions)
@@ -25,12 +28,14 @@ Version 1.1 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+ · [What changed 
 **Content**
 - [Typography](#typography)
 - [Tables](#tables)
+- [Charts](#charts)
 
 **Forms**
 - [Form controls](#form-controls)
 - [Floating labels](#floating-labels)
 - [Search inputs](#search-inputs)
 - [Form layout](#form-layout)
+  - [Inline field validation](#inline-field-validation)
 - [Filter bar](#filter-bar)
 - [Binary setting switch](#binary-setting-switch)
 - [Upload drop zone](#upload-drop-zone)
@@ -47,6 +52,7 @@ Version 1.1 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+ · [What changed 
 - [Avatars and photos](#avatars-and-photos)
 - [Modals](#modals)
   - [Image and document viewer](#6-image-and-document-viewer)
+  - [Stacking](#stacking)
 - [Tabs](#tabs)
 - [Side navigation](#side-navigation)
   - [In an application shell](#in-an-application-shell)
@@ -66,6 +72,8 @@ Version 1.1 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+ · [What changed 
 - [Reorder handle](#reorder-handle)
 - [Schedule row](#schedule-row)
 - [Week plan](#week-plan)
+- [Timeline](#timeline)
+- [Stepper](#stepper)
 
 **Utilities**
 - [Gradient bars](#gradient-bars)
@@ -80,14 +88,19 @@ Version 1.1 · Built on Bootstrap 5.3 · Bootstrap Icons 1.11+ · [What changed 
 - [Grouped tables](#grouped-tables)
 - [Document list card](#document-list-card)
 - [Information card](#information-card)
+- [Print views](#print-views)
 - [Page templates](#page-templates)
   - [Sign-in page](#sign-in-page)
 - [Migration guide](#migration-guide)
-- [Changelog](#changelog)
 
 **Email**
 - [Transactional email](#transactional-email)
   - [Before an email ships](#before-an-email-ships)
+
+**Ship & reference**
+- [Checklist](#checklist)
+- [Bootstrap classes we still use](#reference-bootstrap-classes-we-still-use)
+- [Changelog](#changelog)
 
 ---
 
@@ -118,10 +131,211 @@ The result is quieter, scales better when many elements share a screen, and lets
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<link rel="stylesheet" href="/css/chemical.css">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 ```
 
 jQuery is assumed present in payment and disbursement views (used for AJAX submission and DOM manipulation). Bootstrap's own JS is used through `data-bs-*` attributes wherever possible.
+
+---
+
+## The system stylesheet
+
+*Added in 1.2.* Version 1.1 clarified that each application carries one small plain-CSS file for state selectors, animations, and responsive layout rules that inline `style` attributes cannot express, and began referencing `cc-` classes across components without collecting them in one place. Below is the canonical `wwwroot/css/chemical.css` — plain CSS, no preprocessor, loaded once after Bootstrap.
+
+Inline `style` attributes remain valid for static, one-off layout and sizing. Reach for `cc-` classes whenever an element reacts to `:hover`, `:focus-visible`, `:active`, `:checked`, `:disabled`, `.active`, `.collapsed`, `[hidden]`, `prefers-reduced-motion`, or `@media print`.
+
+```css
+/* chemical.css — Chemical Design System v1.2 */
+:root {
+    --cc-canvas: #f8fafc;
+    --cc-surface: #ffffff;
+    --cc-ink-900: #0f172a;
+    --cc-ink: #1e293b;
+    --cc-body: #475569;
+    --cc-muted: #64748b;
+    --cc-eyebrow: #94a3b8;
+    --cc-line: #e2e8f0;
+    --cc-hairline: #f1f5f9;
+}
+
+body {
+    background-color: var(--cc-canvas);
+    color: var(--cc-ink);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Put the HTML hidden attribute back in charge over Bootstrap .d-flex !important */
+[hidden] { display: none !important; }
+
+/* Proportional font, fixed-width digits — currency, stats, grades, timers */
+.cc-num { font-variant-numeric: tabular-nums; }
+
+/* Keyboard focus ring across custom interactive surfaces */
+.cc-btn:focus-visible,
+.cc-hover-card:focus-visible,
+.cc-outline-row:focus-visible,
+.cc-outline-toggle:focus-visible,
+.cc-nav-open:focus-visible,
+.cc-nav-toggle:focus-visible,
+[data-cc-viewer]:focus-visible,
+[data-cc-copy]:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+/* Soft-pill buttons — static tone + hover + focus + disabled without !important wars */
+.cc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+    border-radius: 8px;
+    border: 1.5px solid transparent;
+    padding: 0.45rem 0.85rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.cc-btn i { font-size: 0.95rem; line-height: 1; }
+.cc-btn-sm { font-size: 0.72rem; border-radius: 6px; padding: 3px 10px; gap: 0.25rem; }
+.cc-btn-sm i { font-size: 0.70rem; }
+
+.cc-btn-create { background-color: #f0fdf4; border-color: #86efac; color: #15803d; }
+.cc-btn-create:hover { background-color: #dcfce7; border-color: #4ade80; color: #166534; }
+
+.cc-btn-edit { background-color: #eff6ff; border-color: #93c5fd; color: #2563eb; }
+.cc-btn-edit:hover { background-color: #dbeafe; border-color: #60a5fa; color: #1d4ed8; }
+
+.cc-btn-delete { background-color: #fff1f2; border-color: #fda4af; color: #be123c; }
+.cc-btn-delete:hover { background-color: #ffe4e6; border-color: #fb7185; color: #9f1239; }
+
+.cc-btn-warn, .cc-btn-orange { background-color: #fff7ed; border-color: #fed7aa; color: #c2410c; }
+.cc-btn-warn:hover, .cc-btn-orange:hover { background-color: #ffedd5; border-color: #fdba74; color: #9a3412; }
+
+.cc-btn-print { background-color: #fdf4ff; border-color: #d8b4fe; color: #9333ea; }
+.cc-btn-print:hover { background-color: #f3e8ff; border-color: #c084fc; color: #7e22ce; }
+
+.cc-btn-cheque { background-color: #f0fdfa; border-color: #99f6e4; color: #0f766e; }
+.cc-btn-cheque:hover { background-color: #ccfbf1; border-color: #5eead4; color: #115e59; }
+
+.cc-btn-neutral { background-color: #f1f5f9; border-color: #e2e8f0; color: #475569; }
+.cc-btn-neutral:hover { background-color: #e2e8f0; border-color: #cbd5e1; color: #1e293b; }
+
+.cc-btn:disabled, .cc-btn.disabled {
+    opacity: 0.55;
+    pointer-events: none;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Form controls, switches, dropzones, quiz options & OTP boxes */
+.cc-control { border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.85rem; box-shadow: none; }
+.cc-control:focus { border-color: #93c5fd; box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.12); }
+.cc-invalid, .form-control.cc-invalid, .form-select.cc-invalid { border-color: #fda4af !important; background-color: #fff1f2; }
+.cc-invalid:focus { border-color: #fb7185 !important; box-shadow: 0 0 0 0.2rem rgba(225, 29, 72, 0.12) !important; }
+
+.cc-switch .form-check-input { width: 2.4em; height: 1.3em; border: 1.5px solid #cbd5e1; background-color: #f1f5f9; cursor: pointer; }
+.cc-switch .form-check-input:checked { background-color: #16a34a; border-color: #16a34a; }
+.cc-switch .form-check-input:focus { box-shadow: 0 0 0 0.2rem rgba(22, 163, 74, 0.15); border-color: #86efac; }
+
+.cc-dropzone { background-color: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 8px; cursor: pointer; transition: background-color 0.15s ease, border-color 0.15s ease; }
+.cc-dropzone:hover, .cc-dropzone.cc-dragover { background-color: #eff6ff; border-color: #93c5fd; }
+
+.cc-option { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 0.9rem; cursor: pointer; background-color: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.88rem; color: #1e293b; transition: background-color 0.15s ease, border-color 0.15s ease; }
+.cc-option:hover { border-color: #a5b4fc; background-color: #f8fafc; }
+.cc-option:has(input:checked) { border-color: #a5b4fc; background-color: #eef2ff; color: #3730a3; }
+.cc-option input { accent-color: #4f46e5; width: 1.05rem; height: 1.05rem; flex-shrink: 0; }
+
+.cc-otp { width: 2.75rem; height: 3.1rem; text-align: center; font-size: 1.25rem; font-weight: 700; color: #1e293b; border: 1.5px solid #e2e8f0; border-radius: 8px; font-variant-numeric: tabular-nums; }
+.cc-otp:focus { border-color: #93c5fd; box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.12); outline: none; }
+
+/* Comparison tables, clickable cards, course outlines & reorder rows */
+.cc-ruled { border-collapse: collapse; border-spacing: 0; }
+.cc-ruled th, .cc-ruled td { border: 1px solid #e2e8f0; }
+
+.cc-hover-card { transition: box-shadow 0.15s ease, transform 0.15s ease; }
+.cc-hover-card:hover { box-shadow: 0 0.35rem 1rem rgba(15, 23, 42, 0.09) !important; transform: translateY(-1px); }
+
+.cc-outline-toggle .bi-chevron-down { transition: transform 0.18s ease; }
+.cc-outline-toggle.collapsed .bi-chevron-down { transform: rotate(-90deg); }
+.cc-outline-row { border: 1.5px solid transparent; transition: background-color 0.15s ease, border-color 0.15s ease; }
+.cc-outline-row:hover { background-color: #f8fafc; }
+.cc-outline-row[aria-current="page"] { background-color: #eff6ff; border-color: #93c5fd; border-bottom-color: #93c5fd !important; }
+
+.cc-grip { cursor: grab; color: #cbd5e1; touch-action: none; }
+.cc-grip:hover { color: #64748b; }
+.cc-sort-ghost { opacity: 0.4; background-color: #eff6ff !important; }
+.cc-reorder-moves { opacity: 0; transition: opacity 0.15s ease; }
+.cc-reorder-row:hover .cc-reorder-moves,
+.cc-reorder-row:focus-within .cc-reorder-moves { opacity: 1; }
+@media (hover: none) { .cc-reorder-moves { opacity: 1; } }
+
+/* Tabs, side navigation, shell drawer & collapsible rail */
+.cc-tabs .nav-link, .cc-sidenav .nav-link {
+    border-radius: 8px; font-size: 0.82rem; color: #475569;
+    border: 1.5px solid transparent; background-color: transparent; transition: all 0.15s ease;
+}
+.cc-tabs .nav-link { font-size: 0.78rem; letter-spacing: 0.03em; color: #64748b; }
+.cc-tabs .nav-link:hover:not(.active), .cc-sidenav .nav-link:hover:not(.active) {
+    background-color: #f8fafc; border-color: #e2e8f0; color: #1e293b;
+}
+.cc-tabs .nav-link.active, .cc-sidenav .nav-link.active {
+    background-color: #eff6ff !important; color: #2563eb !important; border-color: #93c5fd !important; font-weight: 600;
+}
+.cc-tabs .nav-link .tab-badge { background-color: #f1f5f9; color: #475569; font-size: 0.68rem; border-radius: 20px; padding: 2px 8px; font-weight: 700; }
+.cc-tabs .nav-link.active .tab-badge { background-color: #2563eb; color: #ffffff; }
+
+.cc-nav-open, .cc-nav-toggle {
+    background: transparent; border: 1.5px solid transparent; border-radius: 8px;
+    color: #475569; padding: 4px 8px; line-height: 1; transition: all 0.15s ease;
+}
+.cc-nav-open { font-size: 1.25rem; padding: 4px 6px; }
+.cc-nav-open:hover, .cc-nav-toggle:hover { background-color: #f8fafc; border-color: #e2e8f0; color: #1e293b; }
+.cc-shell-col { width: 280px; --bs-offcanvas-width: 280px; --bs-offcanvas-border-width: 0; }
+#appNav { overflow-y: auto; min-height: 0; flex-wrap: nowrap; }
+
+@media (max-width: 767.98px) { .cc-nav-toggle-form { display: none; } }
+@media (min-width: 768px) {
+    .cc-nav-collapsed .cc-nav-col { flex: 0 0 auto; width: auto; }
+    .cc-nav-collapsed .cc-nav-body { flex: 1 1 0; width: auto; max-width: 100%; min-width: 0; }
+    .cc-nav-collapsed .cc-nav-label { display: none; }
+    .cc-nav-collapsed .cc-sidenav-card .card-body { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+    .cc-nav-collapsed .cc-sidenav .nav-link,
+    .cc-nav-collapsed #appNav .nav-link,
+    .cc-nav-collapsed .cc-nav-toggle-form { justify-content: center; }
+}
+
+/* Skeleton loading states */
+.cc-skel {
+    display: block; border-radius: 6px;
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 37%, #f1f5f9 63%);
+    background-size: 400% 100%; animation: cc-skel-shimmer 1.4s ease infinite;
+}
+.cc-skel-inline { display: inline-block; vertical-align: middle; }
+.cc-skel-round { border-radius: 50%; }
+.cc-skel-pill { border-radius: 20px; }
+@keyframes cc-skel-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .cc-skel { animation: none; background: #f1f5f9; }
+    *, *::before, *::after { transition-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}
+
+@media print {
+    body { background-color: #ffffff !important; color: #0f172a !important; }
+    header, .cc-nav-col, .cc-no-print, .breadcrumb { display: none !important; }
+    main { height: auto !important; display: block !important; }
+    .cc-nav-body { overflow: visible !important; padding: 0 !important; height: auto !important; }
+    .card { border: 1px solid #cbd5e1 !important; box-shadow: none !important; break-inside: avoid; }
+    .cc-gradient-bar { display: none !important; }
+    .table-responsive { overflow: visible !important; }
+}
+```
 
 ---
 
@@ -163,6 +377,19 @@ Because there is no build step, inline `style` attributes are the delivery mecha
 ---
 
 # Customize
+
+## Canvas and surfaces
+
+*Added in 1.2.* Because cards carry no border (`border-0 shadow-sm`), the page behind them cannot be white. A `#ffffff` card on a `#ffffff` `<body>` loses its edge everywhere the shadow falls thin — the top edge above all — and the page turns into floating text. Every screen works across four fixed planes:
+
+| Plane | Hex | Where it appears |
+|---|---|---|
+| **Page canvas** | `#f8fafc` | `<body>` and `.cc-nav-body` on every web view (`#f1f5f9` in [transactional email](#transactional-email), where mail clients drop `box-shadow`) |
+| **Card & modal surface** | `#ffffff` | Every `.card`, `.modal-content`, `.dropdown-menu`, the application bar, and the side-nav column |
+| **Inset well** | `#f8fafc` | Inside a white card for read-only note boxes, confirmation detail blocks, dropzones, and empty states — always bounded by `1px solid #e2e8f0` or `1px dashed #e2e8f0` because `#f8fafc` inside `#ffffff` needs an explicit edge |
+| **Media stage** | `#0f172a` | Video and rendered PDF pages inside a [media frame](#media-frame); nothing else in the system uses a dark surface |
+
+---
 
 ## Color system
 
@@ -214,28 +441,34 @@ Hover surface / bubble fill: Video `#ede9fe`, PDF `#ccfbf1`, Quiz `#e0e7ff`, Ass
 
 ### Action colors
 
-| Action | Surface | Border | Foreground | Gradient |
+| Action | Surface | Border | Foreground | Solid / Gradient |
 |---|---|---|---|---|
-| **Create / Add** | `#f0fdf4` | `#86efac` | `#16a34a` | `#16a34a → #34d399` |
+| **Create / Add** | `#f0fdf4` | `#86efac` | `#15803d` | `#16a34a → #34d399` |
 | **Edit / Primary** | `#eff6ff` | `#93c5fd` | `#2563eb` | `#2563eb → #60a5fa` |
-| **Destructive** | `#fff1f2` | `#fda4af` | `#e11d48` | `#e11d48 → #fda4af` |
+| **Destructive** | `#fff1f2` | `#fda4af` | `#be123c` | `#e11d48 → #fda4af` |
 | **Neutral / Close** | `#f1f5f9` | `#e2e8f0` | `#475569` | — |
 | **Warning / Pending** | `#fff7ed` | `#fed7aa` | `#c2410c` | `#c2410c → #fb923c` |
+
+> **Tightened in 1.2 (WCAG 2.1 AA).** Every action and identity foreground now clears **4.5:1** against its tinted surface. Create text moved from `#16a34a` (3.15:1 on `#f0fdf4`, which washes out at `0.68rem`–`0.78rem`) to `#15803d` (**4.79:1**), and Destructive text on `#fff1f2` moved from `#e11d48` (4.27:1) to `#be123c` (**5.72:1**, matching the sign-in error box). `#16a34a` and `#e11d48` stay on solid fills (switches, completed checks), icons on `#ffffff`, and gradient starts. Existing views using `#16a34a` or `#e11d48` inline remain visually harmonious; adopt `.cc-btn-create` and `.cc-btn-delete` as views are touched.
 
 ### Neutral scale
 
 Drawn from Tailwind's slate family. Used for text, borders, and surfaces that carry no semantic weight.
 
-| Token | Hex | Use |
-|---|---|---|
-| `slate-900` | `#1e293b` | Primary text, headings, values |
-| `slate-600` | `#475569` | Body text, secondary values |
-| `slate-500` | `#64748b` | Table headers, form labels, help text |
-| `slate-400` | `#94a3b8` | Section labels, muted metadata, placeholder icons |
-| `slate-300` | `#cbd5e1` | Empty-state icons, dashed borders, disabled text |
-| `slate-200` | `#e2e8f0` | Input borders, card dividers, table header rule |
-| `slate-100` | `#f1f5f9` | Neutral pill fill, table row dividers, hairline rules |
-| `slate-50` | `#f8fafc` | Read-only surfaces, note boxes, empty-state fill |
+| Token | Hex | Contrast on `#fff` | Use |
+|---|---|---|---|
+| `slate-900` | `#0f172a` | 17.8:1 | Deep ink (document titles, figure-grid values, email headlines, media stage) |
+| `slate-800` | `#1e293b` | 14.7:1 | Primary UI text, headings, record values |
+| `slate-700` | `#334155` | 10.4:1 | Email body copy, dense prose |
+| `slate-600` | `#475569` | 7.58:1 | Secondary body text, neutral button labels |
+| `slate-500` | `#64748b` | 4.76:1 | **Readable muted floor:** table headers, form labels, helper text, paging ranges, empty-state sentences |
+| `slate-400` | `#94a3b8` | 2.56:1 | **Non-prose only:** uppercase tracked eyebrows (with leading icon), input placeholders, muted icons |
+| `slate-300` | `#cbd5e1` | 1.49:1 | Empty-state icons, dashed unavailable borders, reorder grips |
+| `slate-200` | `#e2e8f0` | — | Input borders, card dividers, table header rules |
+| `slate-100` | `#f1f5f9` | — | Neutral pill fill, table row dividers, hairline rules, skeleton tracks |
+| `slate-50` | `#f8fafc` | — | Page canvas, read-only surfaces, note boxes, empty-state fill |
+
+**The legibility boundary sits between `slate-500` and `slate-400`.** If the user has to read a sentence to know why something failed, what a field expects, or why a list is empty, set it in `#64748b` (4.76:1 on `#ffffff`, 4.58:1 on `#f8fafc`), never `#94a3b8` (2.56:1, invisible on a classroom projector or an uncalibrated cashier screen). Reserve `#94a3b8` for uppercase eyebrows (`0.70rem`, bold, `0.08em` tracking, paired with an icon), placeholders, and decorative chrome.
 
 ---
 
@@ -280,7 +513,15 @@ The system uses a compressed scale. Nothing is larger than `2rem` except a page'
 | Table header | `0.72rem` | `600` | `#64748b` | uppercase, `letter-spacing: 0.05em` |
 | Section label | `0.70rem` | `fw-semibold` | `#94a3b8` | uppercase, `letter-spacing: 0.08em` |
 | Badge / pill | `0.68rem` | `fw-semibold` | semantic | |
-| Helper text | `0.75rem` | normal | `#94a3b8` | |
+| Helper text | `0.75rem` | normal | `#64748b` | Readable sentences under inputs, ranges, captions |
+
+### Tabular numerals
+
+*Added in 1.2.* Proportional digits vary in width (`1` is narrower than `8`), so right-aligned currency columns fail to line up at the decimal point and live timers jitter sideways every second. Add `.cc-num` (`font-variant-numeric: tabular-nums`) to every currency amount, stat-card counter, grade column, percentage, and countdown strip. It keeps the UI typeface while pinning every digit to one advance width.
+
+```html
+<span class="fw-bold cc-num" style="font-size: 0.88rem; color: #2563eb;">₱ 1,200.00</span>
+```
 
 ### Monospace
 
@@ -365,7 +606,8 @@ Every card follows the same skeleton:
     </div>
 
     <!-- 3. Gradient bar -->
-    <div style="height: 3px; background: linear-gradient(90deg, #2563eb, #60a5fa);
+    <div class="cc-gradient-bar"
+         style="height: 3px; background: linear-gradient(90deg, #2563eb, #60a5fa);
                 border-radius: 0 0 0.375rem 0.375rem;"></div>
 </div>
 ```
@@ -373,8 +615,9 @@ Every card follows the same skeleton:
 ### Rules
 
 - `border-0 shadow-sm` — never `border`, never `shadow` (except modals, which use `shadow`)
-- `card-body px-4 py-3` for standard content; `p-2` when the body contains only a full-width button
-- The gradient bar sits **outside** `card-body`, as the last child of `card`
+- `card-body px-4 py-3` for standard content; `p-2` when the body contains only a full-width button or media stage
+- The gradient bar sits **outside** `card-body`, as the last child of `card`, with `class="cc-gradient-bar"` so `@media print` can suppress it cleanly
+- **One exception:** the [Breadcrumb](#breadcrumb) card carries no gradient bar — it states where the page sits in the hierarchy, not what the page is about
 - Gradient color must match the card's semantic meaning
 - Multi-purpose cards (recent activity, action lists) use a three-stop rainbow: `linear-gradient(90deg, #2563eb, #9333ea, #0f766e)`
 
@@ -565,7 +808,71 @@ When a cell stands for a short list — every time a voucher was printed, every 
 
 - **The detail row is a sibling, not a nested table**, and its `colspan` covers every column — a short row breaks the column rules the header set.
 - **The chevron turns** (`bi-chevron-down` to `bi-chevron-up`) so the control says which way it will move.
-- **Nothing to show is a phrase, not an empty link:** `<span style="color:#94a3b8;">Not printed</span>`. A control that opens nothing is worse than a sentence.
+- **Nothing to show is a phrase, not an empty link:** `<span style="color:#64748b;">Not printed</span>`. A control that opens nothing is worse than a sentence.
+
+---
+
+## Charts
+
+*Added in 1.2.* [Loading states](#a-chart) specifies the skeleton that holds a chart's place (`aspect-ratio: 2 / 1`); once the request resolves, the rendered Chart.js canvas obeys the same colour and restraint rules as every table and card around it.
+
+### Series palette
+
+Never use Chart.js's default colours, and never assign hues by index from a generic rainbow. Each series takes the semantic hue of what it measures:
+
+| Series meaning | Stroke / Solid bar | Soft fill (area or bar face) | Hover fill |
+|---|---|---|---|
+| **Cash / Primary metric** | `#2563eb` | `rgba(37, 99, 235, 0.14)` | `rgba(37, 99, 235, 0.24)` |
+| **Online / Secondary channel** | `#9333ea` | `rgba(147, 51, 234, 0.14)` | `rgba(147, 51, 234, 0.24)` |
+| **Cheque / Tertiary channel** | `#0f766e` | `rgba(15, 118, 110, 0.14)` | `rgba(15, 118, 110, 0.24)` |
+| **Collections / Completed** | `#16a34a` | `rgba(22, 163, 74, 0.16)` | `rgba(22, 163, 74, 0.26)` |
+| **Disbursements / Past due** | `#e11d48` | `rgba(225, 29, 72, 0.14)` | `rgba(225, 29, 72, 0.24)` |
+| **Prior period / Baseline** | `#94a3b8` (dashed `[4, 4]`) | transparent | — |
+
+For bar charts where bars sit side by side, give each bar the system's **soft-pill treatment** (`backgroundColor` set to the tinted fill, `borderColor` to the stroke, `borderWidth: 1.5`, `borderRadius: 4`) rather than solid saturated blocks.
+
+```javascript
+const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: 2,
+    plugins: {
+        legend: {
+            labels: { color: '#475569', usePointStyle: true, boxWidth: 8, font: { size: 12, weight: '600' } }
+        },
+        tooltip: {
+            backgroundColor: '#ffffff',
+            titleColor: '#1e293b',
+            bodyColor: '#475569',
+            borderColor: '#e2e8f0',
+            borderWidth: 1,
+            padding: 10,
+            cornerRadius: 8
+        }
+    },
+    scales: {
+        x: {
+            grid: { display: false },
+            border: { color: '#e2e8f0' },
+            ticks: { color: '#64748b', font: { size: 11 } }
+        },
+        y: {
+            beginAtZero: true,
+            border: { display: false },
+            grid: { color: '#f1f5f9' },
+            ticks: { color: '#64748b', font: { size: 11 } }
+        }
+    }
+};
+```
+
+### Rules
+
+- **Horizontal gridlines only (`#f1f5f9`); vertical gridlines off.** Vertical rules compete with bars and add visual static without helping read a height.
+- **Y-axis starts at zero** for every bar and area chart. A truncated baseline exaggerates ordinary variance into an emergency.
+- **No pie or doughnut charts with more than three slices.** Four or more categories belong in a horizontal bar chart sorted largest first, where labels read left-to-right without a colour legend hunt.
+- **Zero across the whole period renders an [empty state](#empty-states), not a flat line along the bottom.** Destroy or hide the canvas and say *"No collections recorded for this period yet"* so a reader does not mistake an empty dataset for a broken axis.
+- **A canvas has no text for a screen reader.** Set `role="img"` and an `aria-label` stating the takeaway (*"Monthly collections from January to November 2026, peaking in August at ₱ 1.42M"*), or pair the chart with a table on the same page.
 
 ---
 
@@ -803,6 +1110,32 @@ if ($('#particularsTable tbody tr').length === 0) {
 ```
 
 Messages are full sentences, name the field, and end with a period.
+
+### Inline field validation
+
+*Added in 1.2.* The Notice modal above fits client-side builders (adding a line item, checking a table before opening a confirmation). For a multi-field `<form method="post">` validated on the server — student registration, course settings, user management — a modal hides which fields failed the moment it is closed. Render field errors inline beneath the offending controls instead:
+
+```html
+<div class="mb-3">
+    <div class="form-floating">
+        <input type="email" id="email" name="Email" value="rosa@@"
+               class="form-control cc-control cc-invalid" placeholder="Email Address"
+               aria-invalid="true" aria-describedby="email_error">
+        <label for="email" style="font-size: 0.82rem; color: #64748b;">
+            <i class="bi bi-envelope-fill me-1"></i> Email Address
+        </label>
+    </div>
+    <div id="email_error" class="d-flex align-items-center gap-1 mt-1"
+         style="font-size: 0.75rem; color: #be123c; font-weight: 500;">
+        <i class="bi bi-exclamation-circle-fill" style="font-size: 0.75rem;"></i>
+        <span>Enter a complete email address, such as name@example.com.</span>
+    </div>
+</div>
+```
+
+- **Place the error message outside `.form-floating`.** Bootstrap calculates a floating label's position from `.form-floating`'s height; putting text inside it pushes the label out of alignment.
+- **Pair two or more errors with a summary banner at the top of the form** (`#fff1f2` fill, `1px solid #fda4af` border, `#be123c` text) stating how many fields need attention, so an error below the fold is never missed on reload.
+- **Never use Bootstrap's `.is-invalid` background icon.** Its injected SVG exclamation mark collides with `<select>` chevrons, password reveal buttons, and date-picker indicators. `.cc-invalid` tints only the border and surface; the message below carries the icon.
 
 ---
 
@@ -1136,11 +1469,11 @@ For detail pages showing a specific record, the header carries metadata and a ri
                 <div class="mt-2 d-flex align-items-center gap-1 text-muted"
                      style="font-size: 0.84rem;">
                     <i class="bi bi-fingerprint" style="color: #94a3b8;"></i>
-                    <span class="font-monospace" style="color: #94a3b8;">@Model.record_id</span>
-                    <button class="btn btn-link btn-sm p-0 ms-1 text-muted"
-                            title="Copy ID"
-                            onclick="navigator.clipboard.writeText('@Model.record_id')"
-                            style="font-size: 0.84rem;">
+                    <span class="font-monospace" style="color: #64748b;">@Model.record_id</span>
+                    <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-decoration-none"
+                            data-cc-copy="@Model.record_id"
+                            title="Copy ID" aria-label="Copy record ID"
+                            style="font-size: 0.84rem; color: #64748b;">
                         <i class="bi bi-copy"></i>
                     </button>
                 </div>
@@ -1191,6 +1524,22 @@ idiom at row size:
 - **The action stack drops beneath the identity on narrow screens:** `col-12 col-lg` beside
   `col-12 col-lg-auto d-flex flex-wrap flex-lg-column align-items-start align-items-lg-end gap-2`.
   Below `lg` the buttons wrap as a row instead of squeezing the name to a word a line.
+- **Copy buttons confirm that they copied.** Wire `[data-cc-copy]` once in the layout rather than inline `onclick="navigator.clipboard..."` (which gives no visual response and breaks if a value ever contains a quote). Swap `bi-copy` to a `#15803d` `bi-check-lg` for 1.5 seconds so the click is acknowledged:
+
+```javascript
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-cc-copy]');
+    if (!btn || !navigator.clipboard) return;
+    navigator.clipboard.writeText(btn.getAttribute('data-cc-copy') || '').then(function () {
+        const icon = btn.querySelector('i');
+        if (!icon) return;
+        const prev = icon.className;
+        icon.className = 'bi bi-check-lg';
+        icon.style.color = '#15803d';
+        setTimeout(function () { icon.className = prev; icon.style.color = ''; }, 1500);
+    });
+});
+```
 
 ---
 
@@ -1355,50 +1704,54 @@ Add this to any view whose script toggles `hidden` on a flex row. The alternativ
 
 ### Anatomy
 
+Prefer the `.cc-btn` classes from [`chemical.css`](#the-system-stylesheet) so `:hover`, `:focus-visible`, and `:disabled` work without per-button ID selectors:
+
+```html
+<button type="button" class="cc-btn cc-btn-edit">
+    <i class="bi bi-pencil-fill"></i>
+    Edit
+</button>
+```
+
+When writing an isolated snippet without `chemical.css`, the equivalent inline geometry is:
+
 ```html
 <button type="button"
         class="btn fw-semibold d-inline-flex align-items-center gap-2 px-3 py-2"
         style="background-color: [SURFACE]; color: [FOREGROUND]; border: 1.5px solid [BORDER];
                border-radius: 8px; font-size: 0.78rem; letter-spacing: 0.03em;
-               transition: all 0.2s ease;">
+               transition: all 0.15s ease;">
     <i class="bi bi-[ICON]" style="font-size: 0.95rem;"></i>
     Label
 </button>
 ```
 
-Icon size is **always** `0.95rem` for standard buttons and `0.70rem` for table-inline buttons. Never `20px` — it dwarfs the label.
+Icon size is **always** `0.95rem` for standard buttons and `0.70rem` for table-inline buttons (`.cc-btn-sm`). Never `20px` — it dwarfs the label.
 
 ### Variants
 
-| Purpose | Surface | Border | Foreground | Icon |
-|---|---|---|---|---|
-| Add / Create | `#f0fdf4` | `#86efac` | `#16a34a` | `bi-plus-circle-fill` |
-| Edit | `#eff6ff` | `#93c5fd` | `#2563eb` | `bi-pencil-fill` |
-| Upload | `#eff6ff` | `#93c5fd` | `#2563eb` | `bi-cloud-arrow-up-fill` |
-| Save | `#eff6ff` | `#93c5fd` | `#2563eb` | `bi-floppy2-fill` |
-| Print | `#fdf4ff` | `#d8b4fe` | `#9333ea` | `bi-printer-fill` |
-| Validate | `#fdf4ff` | `#d8b4fe` | `#9333ea` | `bi-check-square-fill` |
-| Re-print | `#f0fdf4` | `#86efac` | `#16a34a` | `bi-printer-fill` |
-| Cancel / Remove | `#fff1f2` | `#fda4af` | `#e11d48` | `bi-x-circle-fill` / `bi-trash-fill` |
-| Close / Neutral | `#f1f5f9` | `#e2e8f0` | `#475569` | `bi-x-circle` |
+| Purpose | Class | Surface | Border | Foreground | Icon |
+|---|---|---|---|---|---|
+| Add / Create | `.cc-btn-create` | `#f0fdf4` | `#86efac` | `#15803d` | `bi-plus-circle-fill` |
+| Edit / Upload / Save | `.cc-btn-edit` | `#eff6ff` | `#93c5fd` | `#2563eb` | `bi-pencil-fill` / `bi-cloud-arrow-up-fill` / `bi-floppy2-fill` |
+| Print / Re-print / Validate | `.cc-btn-print` | `#fdf4ff` | `#d8b4fe` | `#9333ea` | `bi-printer-fill` / `bi-check-square-fill` |
+| Cheque action | `.cc-btn-cheque` | `#f0fdfa` | `#99f6e4` | `#0f766e` | `bi-journal-check` |
+| Withdraw / Pending | `.cc-btn-warn` | `#fff7ed` | `#fed7aa` | `#c2410c` | `bi-cash-stack` |
+| Cancel / Remove | `.cc-btn-delete` | `#fff1f2` | `#fda4af` | `#be123c` | `bi-x-circle-fill` / `bi-trash-fill` |
+| Close / Neutral | `.cc-btn-neutral` | `#f1f5f9` | `#e2e8f0` | `#475569` | `bi-x-circle` |
+
+> **Unified in 1.2.** *Re-print* now shares purple (`#fdf4ff` / `#9333ea`) with *Print* and *Reprint request* pills instead of using Create green, keeping green strictly for creation and completion. `.cc-btn-orange` remains aliased to `.cc-btn-warn` for existing views.
 
 ### Hover
 
-Bootstrap's default `.btn:hover` will fight your inline styles. Declare hover in a `<style>` block:
+With [`chemical.css`](#the-system-stylesheet), `.cc-btn-*` handles hover, keyboard `:focus-visible`, and `:disabled` out of the box. In legacy views that still pair Bootstrap's `.btn` with inline colours, declare hover in a `<style>` block so Bootstrap's `.btn:hover` does not wipe out the tint:
 
 ```css
 #setCancelled:hover {
     background-color: #ffe4e6 !important;
-    border-color: #f43f5e !important;
-    box-shadow: 0 2px 8px rgba(225, 29, 72, 0.15);
+    border-color: #fb7185 !important;
+    color: #9f1239 !important;
 }
-```
-
-For non-`btn` elements, inline `onmouseover` / `onmouseout` is acceptable:
-
-```html
-onmouseover="this.style.backgroundColor='#dbeafe'"
-onmouseout="this.style.backgroundColor='#eff6ff'"
 ```
 
 ### Uniform action stacks
@@ -1559,16 +1912,16 @@ Border drops to `1px` and radius rises to `20px` at this scale.
 
 | Status | Surface | Border | Foreground | Icon |
 |---|---|---|---|---|
-| Active | `#f0fdf4` | `#86efac` | `#16a34a` | — |
-| Validated | `#f0fdf4` | `#86efac` | `#16a34a` | `bi-check-circle-fill` |
+| Active | `#f0fdf4` | `#86efac` | `#15803d` | — |
+| Validated | `#f0fdf4` | `#86efac` | `#15803d` | `bi-check-circle-fill` |
 | Not validated | `#fff7ed` | `#fed7aa` | `#c2410c` | `bi-shield-fill-x` |
 | Cancelled | `#fff7ed` | `#fed7aa` | `#c2410c` | `bi-x-circle-fill` |
 | Official Receipt | `#fff7ed` | `#fed7aa` | `#c2410c` | — |
-| Service Invoice | `#f0fdf4` | `#86efac` | `#16a34a` | — |
+| Service Invoice | `#f0fdf4` | `#86efac` | `#15803d` | — |
 | Archived | `#f1f5f9` | `#e2e8f0` | `#475569` | `bi-archive-fill` |
 | Pending (awaiting a decision) | `#fff7ed` | `#fed7aa` | `#c2410c` | `bi-hourglass-split` |
-| Approved | `#f0fdf4` | `#86efac` | `#16a34a` | `bi-check-circle-fill` |
-| Denied | `#fff1f2` | `#fda4af` | `#e11d48` | `bi-x-circle-fill` |
+| Approved | `#f0fdf4` | `#86efac` | `#15803d` | `bi-check-circle-fill` |
+| Denied | `#fff1f2` | `#fda4af` | `#be123c` | `bi-x-circle-fill` |
 
 **Archived is slate, not red.** Archiving hides a record from new work while everything that already
 cites it keeps working; it is reversible, so it carries no warning colour. Pair it with Active.
@@ -1577,7 +1930,7 @@ A request names the action it asks for in that action's own colour:
 
 | Request | Surface | Border | Foreground | Icon |
 |---|---|---|---|---|
-| Cancel | `#fff1f2` | `#fda4af` | `#e11d48` | `bi-x-circle-fill` |
+| Cancel | `#fff1f2` | `#fda4af` | `#be123c` | `bi-x-circle-fill` |
 | Reprint | `#fdf4ff` | `#d8b4fe` | `#9333ea` | `bi-printer-fill` |
 | Edit | `#eff6ff` | `#93c5fd` | `#2563eb` | `bi-pencil-fill` |
 
@@ -2123,11 +2476,16 @@ document.getElementById('disbursementTabs')?.addEventListener('shown.bs.tab', (e
 
 ## Side navigation
 
-For applications where a selection made once — a site, a workspace, a client — scopes everything the user then does. The selection is made on a landing page; the side nav is what that selection opens into, and it stays on screen for every page inside the scope.
+Side navigation takes one of two shapes depending on what scopes the application:
 
-**Use it only for a genuine scope, never as a second menu bar.** If the items are unrelated destinations rather than facets of one selected thing, they belong in the top bar. A side nav that does not answer "inside what?" is just a narrower navbar.
+| Architecture | When to use | Layout | Below `md` (`768px`) |
+|---|---|---|---|
+| **Scoped workspace** | A user picks one entity first (a campus, a course, a section) and works inside it | `col-12 col-md-3` card beside `col-12 col-md-9` body | Stacks above the page |
+| **[Application shell](#in-an-application-shell)** | The application itself is the scope and has no selection step | Full-height `280px` column under the `53px` bar | `offcanvas-md` drawer opened from the bar |
 
-**The same `.active` rule as tabs applies, for the same reason.** Inline `style` on a `.nav-link` outranks any class rule, so a Bootstrap-toggled or server-rendered `.active` would visibly do nothing. All of it lives in a `<style>` block keyed on the nav's `id`.
+Never put navigation links in the [application bar](#application-bar) — destinations always belong in one of these two side-navigation layouts or inside the page itself.
+
+**The same `.active` rule as tabs applies, for the same reason.** Inline `style` on a `.nav-link` outranks any class rule, so a Bootstrap-toggled or server-rendered `.active` would visibly do nothing. Use `.cc-sidenav` from [`chemical.css`](#the-system-stylesheet) or a `<style>` block keyed on the nav's `id`.
 
 ```html
 <style>
@@ -2529,12 +2887,12 @@ A list of rows longer than **15** shows 15 at a time, with a range and Previous 
 
 ```html
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3" id="recentPaging" data-page-size="15">
-    <span id="recentRange" style="font-size: 0.75rem; color: #94a3b8;">1–15 of 21</span>
+    <span id="recentRange" class="cc-num" style="font-size: 0.75rem; color: #64748b;">1–15 of 21</span>
     <div class="d-flex align-items-center gap-2">
-        <button type="button" id="recentPrev" class="btn cc-btn-neutral d-inline-flex align-items-center gap-1 px-3 py-1" disabled>
+        <button type="button" id="recentPrev" class="cc-btn cc-btn-neutral px-3 py-1" disabled>
             <i class="bi bi-chevron-left" style="font-size: 0.70rem;"></i> Previous
         </button>
-        <button type="button" id="recentNext" class="btn cc-btn-neutral d-inline-flex align-items-center gap-1 px-3 py-1">
+        <button type="button" id="recentNext" class="cc-btn cc-btn-neutral px-3 py-1">
             Next <i class="bi bi-chevron-right" style="font-size: 0.70rem;"></i>
         </button>
     </div>
@@ -2586,7 +2944,7 @@ files from. It is the signatory row with the pages added.
 ```html
 <div class="d-flex flex-wrap align-items-center column-gap-3 row-gap-2 py-2"
      style="border-bottom: 1px solid #f1f5f9;">
-    <!-- 34px icon bubble by file kind: blue image, red PDF (any page a PDF makes it red) -->
+    <!-- 34px icon bubble by file kind: blue image, teal PDF (any page a PDF makes it teal) -->
     <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
          style="width: 34px; height: 34px; background-color: #eff6ff;">
         <i class="bi bi-file-earmark-image" style="color: #2563eb; font-size: 0.80rem;"></i>
@@ -2595,7 +2953,7 @@ files from. It is the signatory row with the pages added.
         <div style="font-size: 0.85rem; font-weight: 600; color: #0f172a;">
             Report Card <span style="font-weight: 400; color: #475569;">· Grade 7</span>
         </div>
-        <div style="font-size: 0.75rem; color: #94a3b8;">13 Mar 2026 · Santos, Rosa · 2 pages</div>
+        <div style="font-size: 0.75rem; color: #64748b;">13 Mar 2026 · Santos, Rosa · 2 pages</div>
     </div>
     <!-- page chips: links to each file, the viewer's group -->
     <div class="d-flex flex-wrap align-items-center gap-1">
@@ -2603,7 +2961,7 @@ files from. It is the signatory row with the pages added.
            style="background-color: #eff6ff; border: 1px solid #93c5fd; color: #2563eb;
                   border-radius: 20px; padding: 1px 8px; font-size: 0.72rem; font-weight: 600;">p1</a>
         <a … data-cc-viewer-kind="pdf"
-           style="background-color: #fff1f2; border: 1px solid #fda4af; color: #e11d48; …">p2 pdf</a>
+           style="background-color: #f0fdfa; border: 1px solid #99f6e4; color: #0f766e; …">p2 pdf</a>
     </div>
     <!-- View (a link too) and the ⋯ menu for the writes -->
     <a href="…/pages/1" target="_blank" data-cc-viewer-open="doc-17" …><i class="bi bi-eye"></i>View</a>
@@ -2616,7 +2974,7 @@ files from. It is the signatory row with the pages added.
 - **The meta line is date · who · how many pages**, the uploader's name and never their email.
 - **Every page is a chip, and every chip is a link** to the file, with `target="_blank"`. With the
   viewer's script blocked, a chip opens the page in a new tab; with it, the chips are the
-  [viewer](#documents-and-pdfs)'s group. A PDF page is a red chip marked `pdf`, so a reader knows
+  [viewer](#documents-and-pdfs)'s group. A PDF page is a **teal** chip (`#f0fdfa` / `#99f6e4` / `#0f766e`, unified with [Activity type identity](#activity-type-identity) in 1.2 so rose stays strictly destructive) marked `pdf`, so a reader knows
   before clicking that it opens in the browser's PDF viewer rather than as a picture.
 - **View is a link to page 1 carrying `data-cc-viewer-open`**, for the same reason.
 - **The writes go in a ⋯ [dropdown](#dropdowns)** — Edit details, Add pages, Remove — so a row does
@@ -2663,7 +3021,7 @@ Never render bare text. Every empty collection gets a dashed box with an icon.
 <div class="rounded px-3 py-4 text-center"
      style="background-color: #f8fafc; border: 1px dashed #e2e8f0;">
     <i class="bi bi-image" style="font-size: 1.5rem; color: #cbd5e1;"></i>
-    <p class="mb-0 mt-2" style="font-size: 0.82rem; color: #94a3b8; font-style: italic;">
+    <p class="mb-0 mt-2" style="font-size: 0.82rem; color: #64748b; font-style: italic;">
         No voucher images uploaded
     </p>
 </div>
@@ -2680,13 +3038,10 @@ first user. It saves them hunting for the button that fills the thing they are l
 <div class="rounded px-3 py-4 text-center"
      style="background-color: #f8fafc; border: 1px dashed #e2e8f0;">
     <i class="bi bi-plus-square-dotted" style="font-size: 1.5rem; color: #cbd5e1;"></i>
-    <p class="mb-2 mt-2" style="font-size: 0.82rem; color: #94a3b8; font-style: italic;">
+    <p class="mb-2 mt-2" style="font-size: 0.82rem; color: #64748b; font-style: italic;">
         No activities in this period yet
     </p>
-    <a href="/activities/new" class="d-inline-flex align-items-center gap-2 text-decoration-none"
-       style="background-color: #f0fdf4; color: #16a34a; border: 1.5px solid #86efac;
-              border-radius: 8px; height: 38px; padding: 0 16px; font-size: 0.78rem;
-              font-weight: 600;">
+    <a href="/activities/new" class="cc-btn cc-btn-create" style="height: 38px; padding: 0 16px;">
         <i class="bi bi-plus-circle-fill"></i> Add an activity
     </a>
 </div>
@@ -2887,7 +3242,9 @@ A slim inline card, never a modal and never a toast: a modal demands a dismissal
             Marks for Term 1 have been saved.
         </div>
     </div>
-    <div style="height: 3px; background: linear-gradient(90deg, #16a34a, #34d399);"></div>
+    <div class="cc-gradient-bar"
+         style="height: 3px; background: linear-gradient(90deg, #16a34a, #34d399);
+                border-radius: 0 0 0.375rem 0.375rem;"></div>
 </div>
 ```
 
@@ -2929,7 +3286,9 @@ The full-page "here is why you cannot do that". Every gate — no access, no per
             <div class="font-monospace mt-1" style="font-size: 0.80rem; color: #475569;">0HNO4LLV49TOC</div>
         </div>
     </div>
-    <div style="height: 3px; background: linear-gradient(90deg, #c2410c, #fed7aa);"></div>
+    <div class="cc-gradient-bar"
+         style="height: 3px; background: linear-gradient(90deg, #c2410c, #fb923c);
+                border-radius: 0 0 0.375rem 0.375rem;"></div>
 </div>
 ```
 
@@ -3212,17 +3571,32 @@ Menus are always `border-0 shadow-sm` with `border-radius: 8px`. Items carry a c
 *Added in 1.1, from Litium.* Rows a builder puts in order — modules, sections, activities, quiz questions — carry a grip at their left edge. Dragging the grip (not the row) moves the row; the gap it leaves is a faint blue placeholder; dropping posts the new order.
 
 ```html
-<div class="d-flex align-items-center gap-2 py-2" data-id="m-1" style="border-bottom: 1px solid #f1f5f9;">
+<div class="cc-reorder-row d-flex align-items-center gap-2 py-2" data-id="m-1" style="border-bottom: 1px solid #f1f5f9;">
     <i class="bi bi-grip-vertical cc-grip" title="Drag to reorder" aria-hidden="true" style="font-size: 1rem;"></i>
-    <span class="fw-semibold" style="font-size: 0.88rem; color: #1e293b;">Atomic structure</span>
+    <span class="fw-semibold flex-grow-1" style="font-size: 0.88rem; color: #1e293b;">Atomic structure</span>
+    <div class="cc-reorder-moves d-inline-flex align-items-center gap-1">
+        <button type="button" class="cc-btn cc-btn-neutral cc-btn-sm px-2 py-1" data-cc-move="-1"
+                title="Move Atomic structure up" aria-label="Move Atomic structure up">
+            <i class="bi bi-arrow-up"></i>
+        </button>
+        <button type="button" class="cc-btn cc-btn-neutral cc-btn-sm px-2 py-1" data-cc-move="1"
+                title="Move Atomic structure down" aria-label="Move Atomic structure down">
+            <i class="bi bi-arrow-down"></i>
+        </button>
+    </div>
     <!-- trailing icon-only edit / delete -->
 </div>
+<div id="reorderStatus" class="visually-hidden" aria-live="polite"></div>
 ```
 
 ```css
 .cc-grip { cursor: grab; color: #cbd5e1; touch-action: none; }
 .cc-grip:hover { color: #64748b; }
 .cc-sort-ghost { opacity: 0.4; background-color: #eff6ff !important; }
+.cc-reorder-moves { opacity: 0; transition: opacity 0.15s ease; }
+.cc-reorder-row:hover .cc-reorder-moves,
+.cc-reorder-row:focus-within .cc-reorder-moves { opacity: 1; }
+@media (hover: none) { .cc-reorder-moves { opacity: 1; } }
 ```
 
 ### Rules
@@ -3230,7 +3604,7 @@ Menus are always `border-0 shadow-sm` with `border-radius: 8px`. Items carry a c
 - **Only the grip starts a drag** (`handle: '.cc-grip'`), so text in the row can still be selected and its buttons clicked.
 - **The order is saved by a normal form post** of the ids in their new order, with the anti-forgery token, and a flash message confirms it. No optimistic save without a round trip.
 - **`touch-action: none` on the grip** so a phone drags the row instead of scrolling the page.
-- **Open item:** dragging is pointer-only. A keyboard path (*Move up* / *Move down* in the row) is still to be designed; until then, an application that must be fully keyboard-operable does not rely on this handle alone.
+- **Every draggable row carries keyboard *Move up* / *Move down* buttons** (*resolved in 1.2*). `.cc-reorder-moves` stays quiet until the row is hovered or focused via Tab (`.cc-reorder-row:focus-within`), and stays visible on touch devices. Disable *Move up* on the first item and *Move down* on the last, keep focus on the button that moved the row, and announce the new position (`Atomic structure moved to position 2 of 5`) into an `aria-live="polite"` region.
 
 ---
 
@@ -3285,6 +3659,123 @@ Each row shows the course as a neutral pill, the item's title, its module as a c
 - **Group by the week it opens**, with weeks starting on Monday. Never list a flat run of dates.
 - **An empty card says what comes next** (*Nothing open right now. Your next section is listed below.*), never just "No items".
 - **Staff never see this page** for a person. They get the editable schedule rows instead (see [Schedule row](#schedule-row)).
+
+---
+
+## Timeline
+
+*Added in 1.2.* When a record passes through hands over time — a receipt cancellation request filed, reviewed, and decided; an enrollment application submitted, returned for clearance, and approved; a voucher encoded and validated — render its history as a vertical timeline inside its own card. A plain table wastes width on empty note columns; a comment thread hides status transitions.
+
+```html
+<div class="position-relative ps-4" style="border-left: 2px solid #e2e8f0; margin-left: 14px;">
+
+    <!-- Event 1: completed / approved -->
+    <div class="position-relative pb-3">
+        <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
+              style="position: absolute; left: -39px; top: 0; width: 28px; height: 28px;
+                     background-color: #f0fdf4; border: 2px solid #ffffff;">
+            <i class="bi bi-check-circle-fill" style="color: #15803d; font-size: 0.80rem;"></i>
+        </span>
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <span style="font-size: 0.85rem; color: #1e293b;">
+                <strong class="fw-semibold">Reprint approved</strong> by Maria Santos
+            </span>
+            <span class="px-2 py-1 rounded cc-num"
+                  style="background-color: #f1f5f9; border: 1px solid #e2e8f0; font-size: 0.72rem; color: #64748b;">
+                25 Nov 2026 · 14:18
+            </span>
+        </div>
+        <div class="mt-2 px-3 py-2 rounded"
+             style="background-color: #f8fafc; border: 1px solid #e2e8f0; font-size: 0.82rem; color: #475569;">
+            Printer jammed on first pass; original torn copy attached to cashier log.
+        </div>
+    </div>
+
+    <!-- Last event: pb-0 so the rail stops cleanly -->
+    <div class="position-relative">
+        <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
+              style="position: absolute; left: -39px; top: 0; width: 28px; height: 28px;
+                     background-color: #eff6ff; border: 2px solid #ffffff;">
+            <i class="bi bi-file-earmark-plus-fill" style="color: #2563eb; font-size: 0.78rem;"></i>
+        </span>
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <span style="font-size: 0.85rem; color: #1e293b;">
+                <strong class="fw-semibold">Request filed</strong> by Juan Dela Cruz
+            </span>
+            <span class="px-2 py-1 rounded cc-num"
+                  style="background-color: #f1f5f9; border: 1px solid #e2e8f0; font-size: 0.72rem; color: #64748b;">
+                25 Nov 2026 · 13:52
+            </span>
+        </div>
+    </div>
+
+</div>
+```
+
+### Rules
+
+- **Newest first** when the card answers *"where does this stand now?"* (audit logs, request histories); **oldest first** only when the sequence is a fixed recipe the user is walking forward through. State the order only by the dates — never mix orders across pages of the same app.
+- **28px bubble with a `2px #ffffff` outer ring**, centred over the `2px #e2e8f0` spine (`margin-left: 14px`, `ps-4` = `1.5rem`, bubble `left: -39px`). The white ring separates the bubble cleanly from the grey rail.
+- **Each bubble takes the event's semantic tone**: blue for filed/edited, orange for pending/returned, green for approved/validated, rose for denied/cancelled.
+- **Optional reason boxes appear only when a note exists** — never render an empty `"No remarks"` box on every step of a timeline.
+
+---
+
+## Stepper
+
+*Added in 1.2.* When a task genuinely spans sequential screens that must happen in order — enrollment intake (*Student details → Previous school → Documents → Review*), multi-part onboarding — a stepper card sits directly under the page header so the user sees how much remains and where they are.
+
+```html
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body px-4 py-3">
+        <!-- Phone summary (< md): avoids squashing four labels onto a 375px screen -->
+        <div class="d-flex d-md-none align-items-center justify-content-between">
+            <span class="fw-semibold" style="font-size: 0.85rem; color: #1e293b;">
+                <span style="color: #2563eb;" class="cc-num">Step 2 of 4</span> · Documents
+            </span>
+            <span class="badge rounded-pill" style="background-color: #eff6ff; color: #2563eb; border: 1px solid #93c5fd; font-size: 0.68rem;">In progress</span>
+        </div>
+
+        <!-- Desktop strip (md+) -->
+        <ol class="d-none d-md-flex align-items-center justify-content-between list-unstyled mb-0 gap-2" aria-label="Progress">
+            <!-- Completed step (link back allowed) -->
+            <li class="d-flex align-items-center gap-2">
+                <a href="/enroll/step-1" class="d-inline-flex align-items-center gap-2 text-decoration-none">
+                    <span class="rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                          style="width: 28px; height: 28px; background-color: #16a34a; color: #ffffff; font-size: 0.80rem;">
+                        <i class="bi bi-check-lg"></i>
+                    </span>
+                    <span class="fw-semibold" style="font-size: 0.82rem; color: #15803d;">Student details</span>
+                </a>
+            </li>
+            <li class="flex-grow-1" style="height: 2px; background-color: #86efac;" aria-hidden="true"></li>
+
+            <!-- Current step -->
+            <li class="d-flex align-items-center gap-2" aria-current="step">
+                <span class="rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0 fw-bold cc-num"
+                      style="width: 28px; height: 28px; background-color: #eff6ff; border: 1.5px solid #2563eb; color: #2563eb; font-size: 0.78rem;">2</span>
+                <span class="fw-bold" style="font-size: 0.82rem; color: #1e293b;">Documents</span>
+            </li>
+            <li class="flex-grow-1" style="height: 2px; background-color: #e2e8f0;" aria-hidden="true"></li>
+
+            <!-- Upcoming step (not a link) -->
+            <li class="d-flex align-items-center gap-2">
+                <span class="rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0 fw-semibold cc-num"
+                      style="width: 28px; height: 28px; background-color: #f1f5f9; color: #64748b; font-size: 0.78rem;">3</span>
+                <span style="font-size: 0.82rem; color: #64748b;">Review &amp; submit</span>
+            </li>
+        </ol>
+    </div>
+    <div class="cc-gradient-bar" style="height: 3px; background: linear-gradient(90deg, #2563eb, #60a5fa); border-radius: 0 0 0.375rem 0.375rem;"></div>
+</div>
+```
+
+### Rules
+
+- **Three to five steps at most.** Two steps are a form and its [confirmation modal](#confirmation-flow); six or more mean the steps have not been grouped yet.
+- **Completed steps are links back; upcoming steps are plain text.** Never let a user jump past an unvalidated step by clicking step 4 in the header.
+- **Collapse to `Step N of M · Name` below `md`.** Four horizontal circles and labels on a `375px` viewport either wrap unevenly or force horizontal scroll.
+- **Not a status tracker.** A record waiting on another department (*Submitted → Accounting → Registrar*) is a [timeline](#timeline) or status pill, because the reader is not stepping through screens right now.
 
 ---
 
@@ -3431,24 +3922,23 @@ $("#submitForm").click(function () {
         $('#confirm_note_row').hide();
     }
 
-    // Itemized list
-    var listHtml = '';
+    // Itemized list — build nodes with .text(), never interpolate raw cell text into .html()
+    var $list = $('#confirm_particulars_list').empty();
     $("#particularsTable tbody tr").each(function () {
-        var name   = $(this).find("td:eq(0)").text();
+        var name   = $(this).find("td:eq(0)").text().trim();
         var amount = $(this).find("td:eq(1)").text().trim();
-        listHtml += `
-            <div class="d-flex justify-content-between align-items-center py-2"
-                 style="border-bottom: 1px solid #f1f5f9; font-size: 0.85rem;">
-                <span style="color: #475569;">${name}</span>
-                <span class="fw-semibold" style="color: #1e293b;">${amount}</span>
-            </div>`;
+        $('<div class="d-flex justify-content-between align-items-center py-2" style="border-bottom: 1px solid #f1f5f9; font-size: 0.85rem;">')
+            .append($('<span style="color: #475569;">').text(name))
+            .append($('<span class="fw-semibold cc-num" style="color: #1e293b;">').text(amount))
+            .appendTo($list);
     });
-    $('#confirm_particulars_list').html(listHtml);
     $('#confirm_total').text($('#total_amount').text());
 
     $('#modalConfirmPayment').modal('show');
 });
 ```
+
+> **Security fix in 1.2.** Reading `$(cell).text()` decodes HTML entities; concatenating `${name}` into a template literal passed to `.html()` turns a particular containing `<` into broken markup or DOM XSS. Always populate confirmation lists with `.text()`.
 
 ### Step 2 implementation
 
@@ -3462,25 +3952,28 @@ $("#btnConfirmAndSave").click(function () {
     $("#submitForm").prop("disabled", true).html(iconWait + ' Please wait...');
 
     var paymentModel = { /* ... */ };
+    var csrfToken = $('input[name="__RequestVerificationToken"]').val();
 
     $.ajax({
         url: "/@TempData["LocalityName"].ToString()/payments/sales/add",
         type: "POST",
         contentType: "application/json",
+        headers: csrfToken ? { "RequestVerificationToken": csrfToken } : {},
         data: JSON.stringify(paymentModel),
         success: function (data) {
             if (data === "Successfully Saved") {
                 $("#submitForm").html(iconTag + ' Save');
                 $('#modalSuccessPayment').modal('show');
             } else {
+                $('#lblMessage').text(data || 'The record could not be saved.');
                 $('#modalMessage').modal('show');
-                $('#lblMessage').text(data);
                 RestoreButtons();
             }
         },
         error: function (xhr) {
+            var isPlain = (xhr.getResponseHeader('content-type') || '').indexOf('text/html') === -1;
+            $('#lblMessage').text(isPlain && xhr.responseText ? xhr.responseText : 'Unable to reach the server. Please check your connection and try again.');
             $('#modalMessage').modal('show');
-            $('#lblMessage').text(xhr.responseText);
             RestoreButtons();
         }
     });
@@ -3832,6 +4325,47 @@ A record's own facts in titled groups side by side. First built for a student's 
 
 ---
 
+## Print views
+
+*Added in 1.2.* Administrative applications live half on paper: disbursement vouchers, official receipts, class grade sheets, temporary and official report cards. Two print paths exist — **printing an ordinary screen** (`Ctrl+P` on a detail or ledger page) and **a dedicated print document** opened from a *Print* button.
+
+### 1. Printing an ordinary screen (`@media print`)
+
+[`chemical.css`](#the-system-stylesheet) handles the baseline automatically when `@media print` runs:
+
+- **Chrome disappears:** `header`, `.cc-nav-col`, `.breadcrumb`, `.cc-gradient-bar`, and anything marked `.cc-no-print` (action stacks, filter bars, paging strips, upload buttons, `⋯` menus).
+- **Scrolling containers unclip:** `main`, `.cc-nav-body`, and `.table-responsive` switch to `height: auto; overflow: visible !important;`. Without that, printing an application-shell page prints only the currently visible viewport and clips every wide table at the right margin.
+- **Shadows become hairlines:** `box-shadow` prints as muddy grey bands or vanishes altogether; `.card` switches to `border: 1px solid #cbd5e1` on `#ffffff` with `break-inside: avoid`.
+
+### 2. Dedicated printable documents
+
+When the paper is an official record — a voucher signed by three offices, a student's Form 138 report card — render a standalone layout without the application shell:
+
+```html
+<div class="cc-no-print d-flex align-items-center justify-content-between px-4 py-2"
+     style="background-color: #ffffff; border-bottom: 1px solid #e2e8f0;">
+    <a href="/c/1/vouchers/25037" class="cc-btn cc-btn-neutral">
+        <i class="bi bi-arrow-left"></i> Back to Voucher
+    </a>
+    <button type="button" class="cc-btn cc-btn-print" onclick="window.print()">
+        <i class="bi bi-printer-fill"></i> Print Document
+    </button>
+</div>
+
+<article class="mx-auto my-4 p-4 bg-white" style="max-width: 210mm; color: #0f172a;">
+    <!-- Institution header, document title & monospace number, ruled table, signature grid -->
+</article>
+```
+
+### Rules
+
+- **Ink is `#0f172a` and rules are `#cbd5e1` or `#94a3b8`.** Soft `#f1f5f9` hairlines and `#94a3b8` text disappear on laser printers and photocopiers.
+- **Never rely on background fills to carry meaning on paper.** Browsers strip background graphics by default when printing; a `PASSED` or `CANCELLED` state must say so in words and border weight, not tint alone.
+- **Portraits on printed records are `150 × 180` rectangles** (`border: 1px solid #cbd5e1`, `object-fit: cover`), never circular avatars (see [Avatars and photos](#avatars-and-photos)).
+- **Keep signature blocks undivided** (`break-inside: avoid`). A signature line orphaned at the top of page 2 separated from the table it attests to will be sent back by accounting.
+
+---
+
 ## Page templates
 
 ### Data-entry page
@@ -3988,25 +4522,21 @@ Add a gradient bar as the last child of every `card`.
 - <button class="btn btn-primary text-white fw-bold w-100 mb-3">
 -     <i class="bi bi-pencil-fill" style="font-size:20px; margin-right:10px;"></i>Edit
 - </button>
-+ <button type="button"
-+         class="btn fw-semibold d-inline-flex align-items-center gap-2 px-3 py-2"
-+         style="background-color: #eff6ff; color: #2563eb; border: 1.5px solid #93c5fd;
-+                border-radius: 8px; font-size: 0.78rem; letter-spacing: 0.03em;
-+                transition: all 0.2s ease;">
-+     <i class="bi bi-pencil-fill" style="font-size: 0.95rem;"></i>
++ <button type="button" class="cc-btn cc-btn-edit">
++     <i class="bi bi-pencil-fill"></i>
 +     Edit
 + </button>
 ```
 
-Watch for: `20px` icons (→ `0.95rem`), `margin-right:10px` on icons (→ `gap-2` on the parent), `rounded-top-0` / `rounded-bottom-0` (→ remove, the button is no longer flush with the card).
+Watch for: `20px` icons (→ `0.95rem`, handled automatically by `.cc-btn i`), `margin-right:10px` on icons (→ `gap: 0.5rem` on `.cc-btn`), `rounded-top-0` / `rounded-bottom-0` (→ remove, the button is no longer flush with the card).
 
 ### 3. Badges
 
 ```diff
 - <span class="badge rounded-pill text-bg-success">ACTIVE</span>
 + <span class="badge rounded-pill fw-semibold"
-+       style="background-color: #f0fdf4; color: #16a34a;
-+              border: 1.5px solid #86efac; font-size: 0.68rem;">ACTIVE</span>
++       style="background-color: #f0fdf4; color: #15803d;
++              border: 1px solid #86efac; font-size: 0.68rem;">ACTIVE</span>
 ```
 
 ### 4. Alerts
@@ -4018,7 +4548,7 @@ Watch for: `20px` icons (→ `0.95rem`), `margin-right:10px` on icons (→ `gap-
 + <div class="rounded px-3 py-4 text-center"
 +      style="background-color: #f8fafc; border: 1px dashed #e2e8f0;">
 +     <i class="bi bi-image" style="font-size: 1.5rem; color: #cbd5e1;"></i>
-+     <p class="mb-0 mt-2" style="font-size: 0.82rem; color: #94a3b8; font-style: italic;">
++     <p class="mb-0 mt-2" style="font-size: 0.82rem; color: #64748b; font-style: italic;">
 +         No voucher images uploaded
 +     </p>
 + </div>
@@ -4304,27 +4834,32 @@ The rules are on the **cells**, never the `<tr>`, which most clients will not dr
 
 Before shipping a view, confirm:
 
+- [ ] [`chemical.css`](#the-system-stylesheet) is loaded after Bootstrap so `#f8fafc` canvas, `[hidden]`, `:focus-visible`, and `@media print` apply
 - [ ] Every card is `border-0 shadow-sm`
-- [ ] Every card ends with a gradient bar matching its meaning
+- [ ] Every card (except the [breadcrumb](#breadcrumb) card) ends with a `.cc-gradient-bar` matching its meaning
 - [ ] No `btn-primary`, `btn-danger`, `btn-success`, `btn-warning`, `btn-secondary`
-- [ ] No `text-bg-*`, `bg-*`, or `alert-*` classes
+- [ ] No `text-bg-*`, `bg-*`, `alert-*`, or `.is-invalid` background-icon classes
+- [ ] Create text on `#f0fdf4` uses `#15803d`, Destructive text on `#fff1f2` uses `#be123c`, and readable muted sentences use `#64748b` or darker (≥ 4.5:1 WCAG AA)
 - [ ] Every icon inside a button is `0.95rem` (or `0.70rem` if table-inline)
 - [ ] Every section opens with a `0.70rem` uppercase label
 - [ ] Every table has `table-responsive`, a `2px` header rule, and `1px` row dividers
-- [ ] Every empty collection renders a dashed empty state with an icon
-- [ ] Every uploaded image is a thumbnail that opens in the image viewer, with zoom
-- [ ] Every panel filled by a request shows a skeleton first, and every skeleton ends — in data or in an error state
-- [ ] Every modal opened over another either waits for `hidden.bs.modal` or is lifted above it
+- [ ] Every currency value, stat counter, grade column, percentage, and countdown carries `.cc-num` (`tabular-nums`)
 - [ ] Every currency value is right-aligned, bold, and semantic-colored
+- [ ] Every empty collection renders a dashed empty state with an icon and `#64748b` italic copy
+- [ ] Every uploaded image is a thumbnail that opens in the image viewer, with zoom; PDF page chips use Teal (`#f0fdfa` / `#0f766e`)
+- [ ] Every panel filled by a request shows a skeleton first, and every skeleton ends — in data or in an error state
+- [ ] Every Chart.js canvas uses semantic series colours, horizontal `#f1f5f9` gridlines only, a zero baseline, and an `aria-label` or companion table
+- [ ] Every modal opened over another either waits for `hidden.bs.modal` or is lifted above it
 - [ ] A count of what is left is a tile's only coloured figure, and nothing left is a dashed box rather than a disabled button
 - [ ] Every detail link beside an action sits outside the button, never nested inside it
-- [ ] Any view whose script toggles `hidden` carries `[hidden] { display: none !important; }`
+- [ ] Every `[data-cc-copy]` button confirms with a green check icon rather than failing silently
 - [ ] Every list longer than 15 rows pages at 15, with a `1–15 of N` range and Previous / Next
-- [ ] Every write action passes through a confirmation modal
+- [ ] Server-validated forms render `.cc-invalid` field errors below `.form-floating` (paired with a summary banner when two or more fields fail)
+- [ ] Every irreversible write passes through a confirmation modal that builds item lists via `.text()` (never raw `${...}` inside `.html()`) and sends `RequestVerificationToken` on JSON `POST`s
 - [ ] A confirmation people keep clicking through is active: the error-prone details are ticked, the key figure is typed back, and the button stays disabled until both are done
 - [ ] Every disable on submit is reversed in `RestoreButtons()`
 - [ ] Every `parseInt` on a currency value is `parseFloat`
-- [ ] Tab and any other `.active`-driven styling lives in a `<style>` block
+- [ ] Tab and any other `.active`-driven styling lives in `chemical.css` or a `<style>` block
 - [ ] Search inputs use absolute positioning, not `input-group`
 - [ ] Stacked action buttons share a fixed `width` and `height`
 - [ ] Side-by-side cards use `h-100`
@@ -4335,7 +4870,8 @@ Before shipping a view, confirm:
 - [ ] Every progress figure is in text beside its bar; no Bootstrap `.progress`
 - [ ] Every locked or unavailable outline row is a non-link row with a lock and a `title` saying what unlocks it
 - [ ] Every countdown counts to a server-given deadline and acts at zero
-- [ ] Every drag-to-reorder starts only from a `.cc-grip` and saves by a form post
+- [ ] Every drag-to-reorder starts only from a `.cc-grip`, exposes keyboard *Move up* / *Move down* buttons on hover/focus, and saves by a form post
+- [ ] Interactive chrome (action stacks, filter bars, pagers) carries `.cc-no-print` where pages are printed
 - [ ] Sign-out is a `POST` with the anti-forgery token
 
 ---
@@ -4359,6 +4895,18 @@ The system is not a rejection of Bootstrap — it is a constraint on which parts
 ---
 
 ## Changelog
+
+### 1.2 — November 2026
+
+Suite-wide consolidation across Krypton, Carbon, Cesium, and Litium: codifies the plain-CSS state layer, brings every text token to WCAG 2.1 AA, closes 1.1's open accessibility items, fixes snippet security hazards, adds data-visualisation, workflow, and print rules, and ships a standalone living HTML showcase ([design-system.html](design-system.html)).
+
+- **System stylesheet & surfaces:** [The system stylesheet](#the-system-stylesheet) collects every `cc-` class (`chemical.css`, zero build step) — `.cc-btn` variants, `:focus-visible` rings, `.cc-hover-card`, `.cc-outline-toggle`, `.cc-outline-row`, `.cc-nav-toggle`, `.cc-invalid`, `.cc-ruled`, skeletons, `prefers-reduced-motion`, and `@media print`. [Canvas and surfaces](#canvas-and-surfaces) defines the four elevation planes (`#f8fafc` canvas, `#ffffff` card, `#f8fafc` inset well, `#0f172a` media stage).
+- **WCAG 2.1 AA contrast & neutral scale:** Create text on `#f0fdf4` tightened from `#16a34a` (3.15:1) to `#15803d` (**4.79:1**); Destructive text on `#fff1f2` tightened from `#e11d48` (4.27:1) to `#be123c` (**5.72:1**). Added `slate-900` (`#0f172a`) and `slate-700` (`#334155`), corrected `slate-800` (`#1e293b`), and set `#64748b` (`slate-500`, 4.76:1) as the legibility floor for helper text, paging counts, and empty states.
+- **Typography & data:** [Tabular numerals](#tabular-numerals) (`.cc-num`) for currency, stats, grades, and timers; [Charts](#charts) specifying semantic Chart.js series palettes, horizontal-only `#f1f5f9` gridlines, zero baselines, and screen-reader fallbacks.
+- **Forms & components:** [Inline field validation](#inline-field-validation) (`.cc-invalid` below `.form-floating` for server-validated `POST` forms), [Timeline](#timeline) for audit and request histories, [Stepper](#stepper) for multi-screen intake flows, and declarative `[data-cc-copy]` feedback in [Page header](#page-header).
+- **Accessibility & security fixes:** Closed 1.1's open item on [Reorder handle](#reorder-handle) with keyboard *Move up* / *Move down* controls and `aria-live` announcements. Fixed DOM XSS in [Confirmation flow](#confirmation-flow) Step 1 (`.text()` node construction instead of raw `${name}` inside `.html()`), and added `RequestVerificationToken` plus HTML-error-page guarding to Step 2's `$.ajax` snippet.
+- **Reconciliations:** Removed the 1.0 top-bar navigation contradiction in [Side navigation](#side-navigation); unified *Re-print* on purple (`#fdf4ff` / `#9333ea`) and [Document row](#document-row) PDF chips on Teal (`#f0fdfa` / `#0f766e`); noted [Breadcrumb](#breadcrumb) as the one card without a gradient bar; added [Print views](#print-views) and fixed the Table of Contents hierarchy.
+- **Living reference:** Added [design-system.html](design-system.html) at the repository root — an interactive, self-contained reference showcasing every token, component, modal variant, LMS widget, email layout, and 1.2 addition live.
 
 ### 1.1 — November 2026
 
